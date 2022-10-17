@@ -2,14 +2,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../components/Header";
 import { selectDetail, selectMovie } from "../../features/movieSlice";
 import { show_per_page } from "../../config";
-const SuggestList = dynamic(() => import("../../components/SuggestList"));
 
+import SuggestList from "../../components/SuggestList";
 import Zoom from "react-reveal/Zoom";
 import {
   selectGrid2,

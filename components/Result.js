@@ -9,7 +9,7 @@ import {
   selectInitialgrid,
 } from "../features/gridSlice";
 
-function Result({ collections, allDataisTrue }) {
+function Result({ collections }) {
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);
   const grid3 = useSelector(selectGrid3);
@@ -25,9 +25,9 @@ function Result({ collections, allDataisTrue }) {
          
       `}
     >
-      {collections?.map((collection) => (
+      {collections.map((collection) => (
         <ResultList
-          key={collection?.id}
+          key={collection.id}
           id={collection?.id}
           code={collection?.id}
           image={collection?.bigimageurl}
@@ -43,7 +43,6 @@ function Result({ collections, allDataisTrue }) {
           releasedate={collection.releasedate}
           rating={collection.rating}
           director={collection?.director}
-          allDataisTrue={allDataisTrue}
         />
       ))}
     </div>

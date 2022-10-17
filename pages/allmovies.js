@@ -3,17 +3,23 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, useRef } from "react";
 const Header = dynamic(() => import("../components/Header"));
 const Result = dynamic(() => import("../components/Result"));
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { addMovie } from "../features/movieSlice";
 import { resetGrid } from "../features/gridSlice";
 import Reveal from "react-reveal/Reveal";
 import SortingHeader from "../components/SortingHeader";
+import { pageCount } from "../utils/helpers";
 import PaginationNew from "../components/PaginationNew";
-import { fetchAllMovies } from "../utils/fetchmovies";
+import { useRouter } from "next/router";
+import { show_per_page } from "../config";
 
-export default function Allmovie({ totalMovieCount, allMovies }) {
-  const movies = allMovies;
+export default function Allmovie({ movie, totalMovieCount }) {
+  const router = useRouter();
+  const movies = movie;
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
+  const [currentpage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(12);
   const [sortingCriteria, setSortingCriteria] = useState("releasedateDsc");
 
   const [sortingMovie, setSortingMovie] = useState(
@@ -85,15 +91,15 @@ export default function Allmovie({ totalMovieCount, allMovies }) {
     }
   }, [movies, sortingCriteria]);
 
+  const indexOfLastPost = currentpage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentMovie = sortingMovie?.slice(indexOfFirstPost, indexOfLastPost);
+
   useEffect(() => {
     dispatch(resetGrid());
+    dispatch(addMovie(movies));
     setLoading(false);
   }, [movies]);
-
-  // const getData = async () => {
-  //   const data = await fetchAllMovies();
-  //   console.log(data);
-  // };
 
   return (
     <div className="">
@@ -104,30 +110,36 @@ export default function Allmovie({ totalMovieCount, allMovies }) {
       </Head>
       <Header collections={movies} />
       <SortingHeader setSortingCriteria={setSortingCriteria} />
+
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            <Result collections={sortingMovie} allDataisTrue />
-          )}
+          {loading ? <p>Loading...</p> : <Result collections={movie} />}
         </Reveal>
         <PaginationNew totalMovieCount={totalMovieCount} />
       </main>
     </div>
   );
 }
-
 export async function getServerSideProps({ req, res }) {
   res.setHeader(
     "Cache-Control",
-    "public, s-maxage=80, stale-while-revalidate=59"
+    "public, s-maxage=10, stale-while-revalidate=59"
   );
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  );
+  const data = await movieRes.json();
+  // count how many pages
+  let totalMovieCount = pageCount(data.length);
+  const sortMovie = data
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  let totalMovie = sortMovie.slice(0, show_per_page);
 
-  const allMoviesRes = await fetchAllMovies();
-  const allMovies = allMoviesRes.movies;
-  const totalMovieCount = allMoviesRes.totalMovieCount;
   return {
-    props: { totalMovieCount, allMovies },
+    props: { movie: totalMovie, totalMovieCount },
   };
 }

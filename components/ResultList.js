@@ -57,7 +57,7 @@ function ResultList({
         director,
       })
     );
-    if (!allDataisTrue) {
+    if (allDataisTrue) {
       router.push(`/details/${id}`);
     } else {
       router.push(`/detailsall`);

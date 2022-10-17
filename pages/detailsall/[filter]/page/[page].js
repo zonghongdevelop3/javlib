@@ -3,11 +3,9 @@ import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
-import dynamic from "next/dynamic";
-const SuggestList = dynamic(() => import("../../../../components/SuggestList"));
-
 import Header from "../../../../components/Header";
 import { selectDetail, selectMovie } from "../../../../features/movieSlice";
+import SuggestList from "../../../../components/SuggestList";
 import Zoom from "react-reveal/Zoom";
 import {
   selectGrid2,

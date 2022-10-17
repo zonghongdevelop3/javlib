@@ -10,14 +10,11 @@ import Reveal from "react-reveal/Reveal";
 // import movies from "../data/movie.json";
 import Pagination from "../components/Pagination";
 import SortingHeader from "../components/SortingHeader";
-import { fetchMovies } from "../utils/fetchmovies";
 
-export default function Home({ mymovies }) {
-  const movies = JSON.parse(mymovies);
+export default function Home({ movies, totalMovieCount }) {
+  console.log(movies);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-  const [newData, setNewData] = useState([]);
-  const [magnetLinks, setMagnetLinks] = useState([]);
   const [currentpage, setCurrentPage] = useState(1);
   const [postsPerPage] = useState(20);
   const [sortingCriteria, setSortingCriteria] = useState("releasedateDsc");
@@ -132,12 +129,14 @@ export async function getServerSideProps({ req, res }) {
     "public, s-maxage=10, stale-while-revalidate=59"
   );
   const movieRes = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/getmovies`
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/movie.json"
   );
   const data = await movieRes.json();
-  const movies = data.movies;
+
+  // count how many pages
+  // let totalMovie = movies.slice(0, 12);
 
   return {
-    props: { mymovies: JSON.stringify(movies) },
+    props: { movies: data },
   };
 }

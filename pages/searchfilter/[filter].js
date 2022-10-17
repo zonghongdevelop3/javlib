@@ -1,9 +1,13 @@
-import { useState } from "react";
-import dynamic from "next/dynamic";
-const HeaderItems = dynamic(() => import("../../components/HeaderItems"));
-const ResultList = dynamic(() => import("../../components/ResultList"));
-const PaginationNew = dynamic(() => import("../../components/PaginationNew"));
+import { useEffect, useState } from "react";
+import { pageCount, filterAllData } from "../../utils/helpers";
+import HeaderItems from "../../components/HeaderItems";
+import ResultList from "../../components/ResultList";
+
+import PaginationNew from "../../components/PaginationNew";
+
 import { useRouter } from "next/router";
+import { show_per_page } from "../../config";
+
 import Head from "next/head";
 import {
   AdjustmentsIcon,
@@ -16,13 +20,22 @@ import {
   SparklesIcon,
   HeartIcon,
 } from "@heroicons/react/outline";
-import { fetchAllMovies, fetchSearchMovies } from "../../utils/fetchmovies";
 
 function SearchFilter({ moviesData, totalMovieCount, totalMoviesResult }) {
   const movies = JSON.parse(moviesData);
   const router = useRouter();
   const currentParam = router.query.filter;
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState(moviesData);
+  const [currentpage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(12);
+  const indexOfLastPost = currentpage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentMovie = searchResults?.slice(indexOfFirstPost, indexOfLastPost);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const navtoHome = () => {
     router.push("/");
@@ -60,7 +73,6 @@ function SearchFilter({ moviesData, totalMovieCount, totalMoviesResult }) {
   const navtoSearchAll = () => {
     router.push("/searchall");
   };
-
   return (
     <div>
       <Head>
@@ -135,7 +147,7 @@ function SearchFilter({ moviesData, totalMovieCount, totalMoviesResult }) {
       </div>
 
       <main className="mx-auto max-w-screen">
-        {totalMoviesResult > 0 && (
+        {searchResults?.length > 0 && (
           <h1 className=" text-white text-xl lg:text-3xl mt-10 font-light text-center">
             {totalMoviesResult} movies
           </h1>
@@ -162,7 +174,7 @@ function SearchFilter({ moviesData, totalMovieCount, totalMoviesResult }) {
           ))}
         </div>
 
-        {totalMovieCount === 0 && (
+        {searchResults?.length === 0 && (
           <div className="flex items-center justify-center cursor-pointer">
             <h1 className="text-6xl text-gray-400 text-center font-medium tracking-widest">
               No Movies found
@@ -181,10 +193,15 @@ function SearchFilter({ moviesData, totalMovieCount, totalMoviesResult }) {
 
 export default SearchFilter;
 export async function getStaticPaths() {
-  const data = await fetchAllMovies();
-  const moviesCount = data.totalMovieCount;
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  );
+  const data = await movieRes.json();
+
+  let totalMovieCount = pageCount(data.length);
+
   // totalMovieCount number convert into a array
-  let pageIntoArray = Array.from(Array(moviesCount).keys());
+  let pageIntoArray = Array.from(Array(totalMovieCount).keys());
 
   let paths = [];
 
@@ -196,17 +213,29 @@ export async function getStaticPaths() {
 
   return {
     paths,
-    fallback: "blocking",
+    fallback: true,
   };
 }
 
 export async function getStaticProps({ params }) {
   const value = params.filter;
 
-  const data = await fetchSearchMovies(value);
-  const totalMovie = data.movies;
-  const totalMoviesResult = data.totalMoviesResult;
-  const totalMovieCount = data.totalMovieCount;
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  );
+  const data = await movieRes.json();
+
+  const sortData = data
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+
+  const filteredData = filterAllData(sortData, value);
+  const totalMoviesResult = filteredData?.length;
+  let totalMovieCount = pageCount(filteredData.length);
+  let totalMovie = filteredData.slice(0, show_per_page);
 
   return {
     props: {

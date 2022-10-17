@@ -53,7 +53,7 @@ export function filterAllData(data, value) {
   const excludeColumns = [];
   const Value = value.toLocaleUpperCase().trim();
 
-  if (Value === "") return data;
+  if (Value === "") setSearchResults(dataList);
   else {
     const filteredDatas = data?.filter((item) => {
       return Object?.keys(item)?.some((key) =>

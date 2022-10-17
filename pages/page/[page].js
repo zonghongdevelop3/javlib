@@ -1,21 +1,21 @@
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-
-import { useDispatch, useSelector } from "react-redux";
-import { resetGrid } from "../../features/gridSlice";
-import Reveal from "react-reveal/Reveal";
-import {
-  fetchAllMoviesPaginate,
-  fetchAllMovies,
-} from "../../utils/fetchmovies";
+import { useEffect, useState, useRef } from "react";
 const Header = dynamic(() => import("../../components/Header"));
 const Result = dynamic(() => import("../../components/Result"));
-const SortingHeader = dynamic(() => import("../../components/SortingHeader"));
-const PaginationNew = dynamic(() => import("../../components/PaginationNew"));
+import { useDispatch, useSelector } from "react-redux";
+import { addMovie } from "../../features/movieSlice";
+import { resetGrid } from "../../features/gridSlice";
+import Reveal from "react-reveal/Reveal";
+import { show_per_page } from "../../config";
+
+import SortingHeader from "../../components/SortingHeader";
+import { pageCount } from "../../utils/helpers";
+import PaginationNew from "../../components/PaginationNew";
 
 export default function Home({ moviesData, totalMovieCount, currentPostpage }) {
   const movies = JSON.parse(moviesData);
+
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [currentpage, setCurrentPage] = useState(1);
@@ -96,10 +96,10 @@ export default function Home({ moviesData, totalMovieCount, currentPostpage }) {
 
   useEffect(() => {
     dispatch(resetGrid());
+    dispatch(addMovie(movies));
     setLoading(false);
   }, [movies]);
 
-  console.log(movies);
   return (
     <div className="">
       <Head>
@@ -124,10 +124,15 @@ export default function Home({ moviesData, totalMovieCount, currentPostpage }) {
   );
 }
 export async function getStaticPaths() {
-  const data = await fetchAllMovies();
-  const moviesCount = data.totalMovieCount;
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  );
+  const data = await movieRes.json();
 
-  let pageIntoArray = Array.from(Array(moviesCount).keys());
+  let totalMovieCount = pageCount(data.length);
+
+  // totalMovieCount number convert into a array
+  let pageIntoArray = Array.from(Array(totalMovieCount).keys());
 
   let paths = [];
 
@@ -139,15 +144,41 @@ export async function getStaticPaths() {
 
   return {
     paths,
-    fallback: "blocking",
+    fallback: true,
   };
 }
 
 export async function getStaticProps({ params }) {
-  const page = params.page;
-  const movieRes = await fetchAllMoviesPaginate(page);
-  const totalMovie = movieRes.movies;
-  const totalMovieCount = movieRes.totalMovieCount;
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  );
+  const data = await movieRes.json();
+  const sortMovie = data
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+
+  let totalMovieCount = pageCount(data.length);
+
+  // main Logic for dynamic pagination get post base on show_per_page in you app.
+
+  let totalMovie;
+
+  if (Number(params.page) == 1) {
+    totalMovie = sortMovie.slice(show_per_page, show_per_page);
+  }
+  if (Number(params.page) == 2) {
+    totalMovie = sortMovie.slice(show_per_page, show_per_page * params.page);
+  }
+
+  if (Number(params.page) > 2) {
+    totalMovie = sortMovie.slice(
+      show_per_page * params.page - show_per_page,
+      show_per_page * params.page
+    );
+  }
 
   return {
     props: {
@@ -155,5 +186,6 @@ export async function getStaticProps({ params }) {
       totalMovieCount,
       currentPostpage: params.page,
     },
+    revalidate: 60,
   };
 }

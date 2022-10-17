@@ -1,34 +1,33 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-import { useSelector } from "react-redux";
-import { selectDetail } from "../../features/movieSlice";
+import { useDispatch, useSelector } from "react-redux";
+import Header from "../../components/Header";
+import { selectDetail, selectMovie } from "../../features/movieSlice";
+
+import SuggestList from "../../components/SuggestList";
 import Zoom from "react-reveal/Zoom";
 import {
   selectGrid2,
   selectGrid3,
   selectGrid5,
   selectInitialgrid,
+  resetGrid,
 } from "../../features/gridSlice";
-
 import { EyeIcon } from "@heroicons/react/outline";
-const Header = dynamic(() => import("../../components/Header"));
-const SuggestList = dynamic(() => import("../../components/SuggestList"));
-const Pagination = dynamic(() => import("../../components/Pagination"));
+import Pagination from "../../components/Pagination";
+import { useRouter } from "next/router";
 
-import {
-  fetchMoviesDetailsWithSuggest,
-  fetchMovies,
-} from "../../utils/fetchmovies";
-import { pageCount } from "../../utils/helpers";
+function ModieDetails({ all }) {
+  const router = useRouter();
 
-function ModieDetails({ movieDetails, suggestMovie, all }) {
+  const dispatch = useDispatch();
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);
   const grid3 = useSelector(selectGrid3);
   const grid5 = useSelector(selectGrid5);
   const movies = useSelector(selectDetail);
+  const all_movie = useSelector(selectMovie);
   const dataList = all;
   const [imageList, setImageList] = useState([]);
   const [activeImage, setActiveImage] = useState(imageList[0]);
@@ -51,35 +50,23 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
     setCurrentPage(pageNumber);
   };
 
-  useEffect(() => {
-    let newImageList = [];
-    const extraimageurlInArray =
-      movieDetails?.extraimageurl !== null &&
-      movieDetails?.extraimageurl?.split(";");
-    newImageList.push(movieDetails?.image, ...extraimageurlInArray);
-    setImageList(newImageList);
-  }, [movieDetails]);
-
   const getUniqueName = () => {
-    const nameInArray =
-      movieDetails.actor !== null && movieDetails.actor?.split("/");
+    let unique = movies.nameInArray?.map((name) => name);
 
-    let unique = nameInArray?.map((name) => name);
-
-    unique = unique?.flat();
+    unique = unique.flat();
 
     return [...new Set(unique)];
   };
 
   const getUniqueKeywords = () => {
     let unique = movies.genreInArray?.map((name) => name);
-    unique = unique?.flat();
+    unique = unique.flat();
 
     return [...new Set(unique)];
   };
 
-  const name = movieDetails ? getUniqueName() : null;
-  const keywords = movieDetails ? getUniqueKeywords() : null;
+  const name = all_movie ? getUniqueName() : null;
+  const keywords = all_movie ? getUniqueKeywords() : null;
 
   useEffect(() => {
     let newImageList = [];
@@ -143,10 +130,8 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
       setActiveDirector("");
       setActiveStudio("");
     }
-    if (Value === "") {
-      setSearchResults(false);
-      setSearchResults(suggestMovie);
-    } else {
+    if (Value === "") setSearchResults(dataList);
+    else {
       const filteredData = dataList.filter((item) => {
         return Object.keys(item).some((key) =>
           excludeColumns.includes(key)
@@ -154,10 +139,22 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
             : item[key]?.toString().toLocaleUpperCase().includes(Value)
         );
       });
-      setShowSuggest(true);
       setSearchResults(filteredData);
     }
   };
+
+  useEffect(() => {
+    const initialfilter = () => {
+      setSearchResults(
+        dataList?.filter((collection) => collection.actor?.includes(name[0]))
+      );
+      setActiveKeyword("");
+      setActiveName("");
+      setActiveSeries("");
+      setShowSuggest(true);
+    };
+    initialfilter();
+  }, [dataList, movies]);
 
   useEffect(() => {
     setActiveImage(imageList[0]);
@@ -169,7 +166,7 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
         <div className="p-1">
           <Head>
             <title>
-              Movie || {movieDetails.title} || {movieDetails.id}
+              Movie || {movies.title} || {movies.code}
             </title>
             <link rel="icon" href="/favicon.ico" />
           </Head>
@@ -247,30 +244,30 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
                       className={` hover:underline cursor-pointer mr-1
                      ${activeCode && "bg-gray-500 text-white font-bold"}`}
                       onClick={() =>
-                        filterData(movieDetails.id.substring(0, 4), "code")
+                        filterData(movies.code.substring(0, 4), "code")
                       }
                     >
-                      {movieDetails.id}
+                      {movies.code}
                     </span>
-                    {movieDetails.title}
+                    {movies.title}
                   </h1>
                 </div>
-                {movieDetails?.series && (
+                {movies.series && (
                   <div
-                    onClick={() => filterData(movieDetails.series, "series")}
+                    onClick={() => filterData(movies.series, "series")}
                     className={`text-xl flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
                            ${
                              activeSeries && "bg-gray-500 text-white font-bold"
                            }`}
                   >
                     <h1 className="cursor-pointer line-clamp-1 lg:line-clamp-none">
-                      {movieDetails.series}
+                      {movies.series}
                     </h1>
                   </div>
                 )}
-                {movieDetails?.studio && (
+                {movies?.studio && (
                   <div
-                    onClick={() => filterData(movieDetails?.studio, "studio")}
+                    onClick={() => filterData(movies.studio, "studio")}
                     className={`text-xl flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
                            ${
                              activeStudio && "bg-gray-500 text-white font-bold"
@@ -296,11 +293,9 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
                   <div
                     className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
                   ${activeDirector && "bg-gray-500 text-white font-bold"}`}
-                    onClick={() =>
-                      filterData(movieDetails?.director, "director")
-                    }
+                    onClick={() => filterData(movies?.director, "director")}
                   >
-                    {movieDetails?.director}
+                    {movies?.director}
                   </div>
                 </div>
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
@@ -322,7 +317,7 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
                   <a
                     target="_blank"
-                    href={movieDetails?.sourceurl}
+                    href={movies?.sourceurl}
                     rel="noopener noreferrer"
                   >
                     <div
@@ -339,18 +334,10 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
           </main>
         </div>
         <div>
-          {showSuggest ? (
-            <h1 className=" text-center text-2xl lg:text-4xl font-medium">
-              Suggest Movie (
-              {searchResults?.length > 0 && searchResults?.length}
-              movies)
-            </h1>
-          ) : (
-            <h1 className=" text-center text-2xl lg:text-4xl font-medium">
-              Suggest Movie ({suggestMovie?.length > 0 && suggestMovie?.length}
-              movies)
-            </h1>
-          )}
+          <h1 className=" text-center text-2xl lg:text-4xl font-medium">
+            Suggest Movie ({searchResults?.length > 0 && searchResults?.length}{" "}
+            movies)
+          </h1>
           <div
             className={`px-5 my-10 grid grid-flow-row-dense
        ${initial && "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}
@@ -360,9 +347,9 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
 
        `}
           >
-            {!showSuggest && suggestMovie ? (
+            {!showSuggest && searchResults ? (
               <>
-                {suggestMovie?.map((collection) => (
+                {searchResults?.map((collection) => (
                   <SuggestList
                     key={collection?.id}
                     id={collection?.id}
@@ -421,32 +408,23 @@ function ModieDetails({ movieDetails, suggestMovie, all }) {
 }
 
 export default ModieDetails;
-export async function getStaticPaths() {
-  const data = await fetchMovies();
-  let totalMovieCount = pageCount(data.length);
-  let pageIntoArray = Array.from(Array(totalMovieCount).keys());
-  let paths = [];
-
-  pageIntoArray.map((path) =>
-    paths.push({
-      params: { id: `${path}` },
-    })
+export async function getServerSideProps({ req, res }) {
+  res.setHeader(
+    "Cache-Control",
+    "public, s-maxage=10, stale-while-revalidate=59"
   );
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/movie.json"
+  );
+  const data = await movieRes.json();
 
+  const initialData = data
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
   return {
-    paths,
-    fallback: "blocking",
-  };
-}
-export async function getStaticProps({ params }) {
-  const id = params.id;
-  const all = await fetchMovies();
-
-  const data = await fetchMoviesDetailsWithSuggest(id);
-  const movies = data.movies[0];
-  const suggestMovie = data.suggest;
-
-  return {
-    props: { movieDetails: movies, suggestMovie: suggestMovie, all: all },
+    props: { all: initialData },
   };
 }
