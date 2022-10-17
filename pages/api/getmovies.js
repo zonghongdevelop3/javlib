@@ -6,5 +6,5 @@ export default async function handler(req, res) {
   );
   const data = await movieRes.json();
 
-  res.status(200).json({ movies: data });
+  res.status(200).json({ movies: JSON.stringify(data) });
 }

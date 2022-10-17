@@ -102,27 +102,6 @@ export default function Home({ movies }) {
     setLoading(false);
   }, [movies]);
 
-  const fetchMe = async () => {
-    const data = await fetchMovies();
-    setNewData(data);
-  };
-
-  const fetchMeFilter = async () => {
-    const id = "ssis-001";
-    const moviesFilter = {
-      id: id,
-    };
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/getmovieswithfilter`,
-      { body: JSON.stringify(moviesFilter), method: "POST" }
-    );
-    const data = await res.json();
-    const movies = data.movies;
-    const magnetsLink = data.magnetsLink;
-    setMagnetLinks(magnetsLink);
-    setNewData(movies);
-  };
-
   return (
     <div className="">
       <Head>
