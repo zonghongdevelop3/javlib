@@ -1,9 +1,7 @@
 export const fetchMovies = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/getmovies`);
-  const dataRes = await res.json();
-  // console.log(dataRes.movies);
-  const movies = JSON.parse(dataRes.movies);
-
+  const data = await res.json();
+  const movies = data.movies;
   return movies;
 };
 

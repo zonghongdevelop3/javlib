@@ -12,7 +12,8 @@ import Pagination from "../components/Pagination";
 import SortingHeader from "../components/SortingHeader";
 import { fetchMovies } from "../utils/fetchmovies";
 
-export default function Home({ movies }) {
+export default function Home({ mymovies }) {
+  const movies = JSON.parse(mymovies);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [newData, setNewData] = useState([]);
@@ -130,12 +131,13 @@ export async function getServerSideProps({ req, res }) {
     "Cache-Control",
     "public, s-maxage=10, stale-while-revalidate=59"
   );
-  const movies = await fetchMovies();
-
-  // count how many pages
-  // let totalMovie = movies.slice(0, 12);
+  const movieRes = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/getmovies`
+  );
+  const data = await movieRes.json();
+  const movies = data.movies;
 
   return {
-    props: { movies: movies },
+    props: { mymovies: JSON.stringify(movies) },
   };
 }
