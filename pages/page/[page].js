@@ -149,9 +149,7 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const movieRes = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
-  );
+  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_ALL_MOVIE_URL);
   const data = await movieRes.json();
   const sortMovie = data
     .slice()

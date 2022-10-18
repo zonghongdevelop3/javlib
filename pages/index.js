@@ -1,18 +1,20 @@
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-const Header = dynamic(() => import("../components/Header"));
-const Result = dynamic(() => import("../components/Result"));
-import { useDispatch, useSelector } from "react-redux";
+// redux
+import { useDispatch } from "react-redux";
 import { addMovie } from "../features/movieSlice";
 import { resetGrid } from "../features/gridSlice";
 import Reveal from "react-reveal/Reveal";
 // import movies from "../data/movie.json";
-import Pagination from "../components/Pagination";
-import SortingHeader from "../components/SortingHeader";
+const Header = dynamic(() => import("../components/Header"));
+const Result = dynamic(() => import("../components/Result"));
+const Pagination = dynamic(() => import("../components/Pagination"));
+const SortingHeader = dynamic(() => import("../components/SortingHeader"));
+// utils
+import { fetchMovies } from "../utils/fetchmovies";
 
-export default function Home({ movies, totalMovieCount }) {
-  console.log(movies);
+export default function Home({ movies }) {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [currentpage, setCurrentPage] = useState(1);
@@ -128,10 +130,8 @@ export async function getServerSideProps({ req, res }) {
     "Cache-Control",
     "public, s-maxage=10, stale-while-revalidate=59"
   );
-  const movieRes = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/movie.json"
-  );
-  const data = await movieRes.json();
+
+  const data = await fetchMovies();
 
   // count how many pages
   // let totalMovie = movies.slice(0, 12);
