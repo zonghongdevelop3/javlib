@@ -58,9 +58,9 @@ function ResultList({
       })
     );
     if (allDataisTrue) {
-      router.push(`/details/${id}`);
-    } else {
       router.push(`/detailsall`);
+    } else {
+      router.push(`/details/${id}`);
     }
   };
   if (image == null) return false;

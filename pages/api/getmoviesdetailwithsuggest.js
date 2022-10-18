@@ -18,9 +18,10 @@ export default async function handler(req, res) {
     return Object?.keys(item)?.some((key) =>
       excludeColumns.includes(key)
         ? false
-        : item[key]?.toString().toLocaleUpperCase().includes(Value)
+        : item["id"]?.toString().toLocaleUpperCase().includes(Value)
     );
   });
+
   const suggestInput = filteredData[0]?.actor.toLocaleUpperCase().trim();
   const suggestMovie = sortData?.filter((item) => {
     return Object?.keys(item)?.some((key) =>
@@ -30,5 +31,5 @@ export default async function handler(req, res) {
     );
   });
 
-  res.status(200).json({ movies: filteredData, suggest: suggestMovie });
+  res.status(200).json({ movies: filteredData[0], suggest: suggestMovie });
 }

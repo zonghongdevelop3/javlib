@@ -27,8 +27,8 @@ const nextConfig = {
       "c1.jdbstatic.com",
       "www.fanbus.one",
       "pics.dmm.co.jp",
-      "www.seedmm.fun",
       "d37zd80kuxb0b6.cloudfront.net",
+      "www.javsee.one",
     ],
   },
 };

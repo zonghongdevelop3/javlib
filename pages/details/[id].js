@@ -17,9 +17,21 @@ import {
 import { EyeIcon } from "@heroicons/react/outline";
 import Pagination from "../../components/Pagination";
 import { useRouter } from "next/router";
+import { fetchMoviesDetailsWithSuggest } from "../../utils/fetchmovies";
+import { pageCount } from "../../utils/helpers";
 
-function ModieDetails({ all }) {
+function ModieDetails({ all, suggest, movieDetail }) {
   const router = useRouter();
+  const movieDBURL = process.env.NEXT_PUBLIC_BASE_SOURCE_WEB_URL;
+  const actorIdInArray =
+    movieDetail.actorid !== null && movieDetail.actorid?.split("/");
+
+  const actorId = movieDetail.actorid;
+
+  const movieID = movieDetail.id.toLocaleUpperCase();
+  const moviesource = `${movieDBURL}/${movieID}`;
+  const actorImg = `${movieDBURL}/pics/actress/${actorId}_a.jpg`;
+  console.log(moviesource);
 
   const dispatch = useDispatch();
   const initial = useSelector(selectInitialgrid);
@@ -159,18 +171,27 @@ function ModieDetails({ all }) {
   useEffect(() => {
     setActiveImage(imageList[0]);
   }, [imageList]);
+  console.log(movieDetail, suggest);
 
+  const fetchme = async () => {
+    const vid = router.query.id;
+    const data = await fetchMoviesDetailsWithSuggest(vid);
+    console.log(data);
+  };
+  const neenameArray = name.concat(actorIdInArray);
+  console.log(neenameArray);
   return (
     <>
       <Zoom bottom>
         <div className="p-1">
           <Head>
             <title>
-              Movie || {movies.title} || {movies.code}
+              Movie || {movieDetail.title} || {movieDetail.id}
             </title>
             <link rel="icon" href="/favicon.ico" />
           </Head>
           <Header />
+          <button onClick={fetchme}>fetchme</button>
           <main className="mx-auto max-w-screen-lg">
             <div className="max-w-screen-xl mx-auto">
               <div className="">
@@ -198,7 +219,7 @@ function ModieDetails({ all }) {
                       width={800}
                       height={800}
                       objectFit="fill"
-                      src={movies?.image}
+                      src={movieDetail?.bigimageurl}
                       alt="poster/image"
                       quality={65}
                       loading="eager"
@@ -278,26 +299,35 @@ function ModieDetails({ all }) {
                     </h1>
                   </div>
                 )}
-                <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
-                  {name &&
-                    name?.map((value) => (
-                      <div
-                        key={value}
-                        className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
+                <div className="w-full">
+                  <h2 className="text-center text-xl tracking-widest mb-2">
+                    Actress
+                  </h2>
+                  <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
+                    {name &&
+                      name?.map((value) => (
+                        <div
+                          key={value}
+                          className={`flex flex-col items-center justify-center p-2  rounded-2xl w-full cursor-pointer
                   ${value == activeName && "bg-gray-500 text-white font-bold"}`}
-                        onClick={() => filterData(value, "name")}
-                      >
-                        {value}
-                      </div>
-                    ))}
+                          onClick={() => filterData(value, "name")}
+                        >
+                          {value}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-xl tracking-widest mb-4">Director</h2>
                   <div
                     className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
                   ${activeDirector && "bg-gray-500 text-white font-bold"}`}
                     onClick={() => filterData(movies?.director, "director")}
                   >
-                    {movies?.director}
+                    <p className="tracking-widest">{movies?.director}</p>
                   </div>
                 </div>
+
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
                   {keywords &&
                     keywords?.map((value) => (
@@ -317,7 +347,7 @@ function ModieDetails({ all }) {
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
                   <a
                     target="_blank"
-                    href={movies?.sourceurl}
+                    href={moviesource}
                     rel="noopener noreferrer"
                   >
                     <div
@@ -335,8 +365,7 @@ function ModieDetails({ all }) {
         </div>
         <div>
           <h1 className=" text-center text-2xl lg:text-4xl font-medium">
-            Suggest Movie ({searchResults?.length > 0 && searchResults?.length}{" "}
-            movies)
+            Suggest Movie ({suggest?.length > 0 && suggest?.length} movies)
           </h1>
           <div
             className={`px-5 my-10 grid grid-flow-row-dense
@@ -349,7 +378,7 @@ function ModieDetails({ all }) {
           >
             {!showSuggest && searchResults ? (
               <>
-                {searchResults?.map((collection) => (
+                {suggest?.map((collection) => (
                   <SuggestList
                     key={collection?.id}
                     id={collection?.id}
@@ -408,13 +437,37 @@ function ModieDetails({ all }) {
 }
 
 export default ModieDetails;
-export async function getServerSideProps({ req, res }) {
-  res.setHeader(
-    "Cache-Control",
-    "public, s-maxage=10, stale-while-revalidate=59"
-  );
+
+export async function getStaticPaths() {
   const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_MOVIE_URL);
   const data = await movieRes.json();
+
+  let totalMovieCount = pageCount(data.length);
+
+  // totalMovieCount number convert into a array
+  let pageIntoArray = Array.from(Array(totalMovieCount).keys());
+
+  let paths = [];
+
+  pageIntoArray.map((path) =>
+    paths.push({
+      params: { id: `${path}` },
+    })
+  );
+
+  return {
+    paths,
+    fallback: "blocking",
+  };
+}
+export async function getStaticProps({ params }) {
+  const id = params.id;
+
+  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_MOVIE_URL);
+  const data = await movieRes.json();
+  const movieDetailsRes = await fetchMoviesDetailsWithSuggest(id);
+  const movieDetail = movieDetailsRes.movies;
+  const suggest = movieDetailsRes.suggest;
 
   const initialData = data
     .slice()
@@ -423,6 +476,6 @@ export async function getServerSideProps({ req, res }) {
         new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
     );
   return {
-    props: { all: initialData },
+    props: { all: initialData, movieDetail: movieDetail, suggest, suggest },
   };
 }
