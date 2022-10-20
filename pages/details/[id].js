@@ -22,7 +22,7 @@ import { pageCount } from "../../utils/helpers";
 
 function ModieDetails({ all, suggest, movieDetail }) {
   const router = useRouter();
-  const movieDBURL = process.env.NEXT_PUBLIC_BASE_SOURCE_WEB_URL;
+  const movieDBURL = "https://www.javsee.one";
   const [actress, setActress] = useState(null);
 
   useEffect(() => {
