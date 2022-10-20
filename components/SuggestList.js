@@ -29,12 +29,14 @@ function SuggestList({
   director,
   allDataisTrue,
   releasedate,
+  actorid,
 }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const nameInArray = name?.split("/");
   const genreInArray = genre?.split(" ");
   const extraimageurlInArray = extraimageurl?.split(";");
+  const actorIdInArray = actorid !== null && actorid?.split("/");
 
   const navToDetails = () => {
     dispatch(
@@ -51,6 +53,7 @@ function SuggestList({
         sourceurl,
         studio,
         director,
+        actorIdInArray,
       })
     );
 

@@ -277,6 +277,7 @@ function Index() {
                   sourceurl={collection?.sourceurl}
                   allDataisTrue
                   releasedate={collection?.releasedate}
+                  actorid={collection?.actorid}
                 />
               ))}
             {!filter &&
@@ -296,6 +297,7 @@ function Index() {
                   sourceurl={collection?.sourceurl}
                   allDataisTrue
                   releasedate={collection?.releasedate}
+                  actorid={collection?.actorid}
                 />
               ))}
           </div>

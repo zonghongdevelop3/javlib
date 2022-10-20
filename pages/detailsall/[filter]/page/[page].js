@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../../../../components/Header";
 import { selectDetail, selectMovie } from "../../../../features/movieSlice";
-import SuggestList from "../../../../components/SuggestList";
+const SuggestList = dynamic(() => import("../../../../components/SuggestList"));
+
 import Zoom from "react-reveal/Zoom";
 import {
   selectGrid2,
@@ -24,6 +27,8 @@ function ModieDetails({ params, moviesData, totalMovieCount, totalMovies }) {
 
   const router = useRouter();
   const moviesDB = JSON.parse(moviesData);
+  const movieDBURL = process.env.NEXT_PUBLIC_BASE_SOURCE_WEB_URL;
+  const [actress, setActress] = useState(null);
 
   const currentParam = router.query.filter;
   const initial = useSelector(selectInitialgrid);
@@ -41,6 +46,16 @@ function ModieDetails({ params, moviesData, totalMovieCount, totalMovies }) {
   const [activeKeyword, setActiveKeyword] = useState("all");
   const [movie, setMovie] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const actorArray = movies.nameInArray;
+    const actorIdInArray = movies?.actorIdInArray;
+
+    const actor = actorArray.map((e, i) => [
+      { name: e, actorid: actorIdInArray[i] },
+    ]);
+    setActress(actor);
+  }, [movies]);
 
   useEffect(() => {
     if (!moviesData) {
@@ -252,24 +267,50 @@ function ModieDetails({ params, moviesData, totalMovieCount, totalMovies }) {
                     </h1>
                   </div>
                 )}
-                <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
-                  {name &&
-                    name?.map((value) => (
-                      <div
-                        key={value}
-                        className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
-                  ${value == activeName && "bg-gray-500 text-white font-bold"}`}
-                        onClick={() => filterData(value, "name")}
-                      >
-                        {value}
-                      </div>
-                    ))}
+                <div className="w-full">
+                  <h2 className="text-center text-xl tracking-widest mb-2">
+                    Actress
+                  </h2>
+                  <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-5">
+                    {actress &&
+                      actress?.map((actor, idx) => (
+                        <div key={idx}>
+                          {actor?.map((value, idx) => (
+                            <div
+                              key={idx}
+                              className={`flex flex-col items-center justify-center p-2  rounded-2xl w-full cursor-pointer
+                            ${
+                              value.name == activeName &&
+                              "bg-gray-500 text-white font-bold"
+                            }`}
+                              onClick={() => filterData(value.name, "name")}
+                            >
+                              <div className="flex flex-col items-center justify-center relative">
+                                <Image
+                                  src={`${movieDBURL}/pics/actress/${value.actorid}_a.jpg`}
+                                  alt="actress"
+                                  height={200}
+                                  width={200}
+                                  objectFit="contain"
+                                  quality={30}
+                                  className="object-contain"
+                                />
+                                <p className="my-2">{value.name}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-xl tracking-widest mb-4">Director</h2>
                   <div
                     className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
                   ${activeDirector && "bg-gray-500 text-white font-bold"}`}
                     onClick={() => filterData(movies?.director, "director")}
                   >
-                    {movies?.director}
+                    <p className="tracking-widest">{movies?.director}</p>
                   </div>
                 </div>
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
@@ -343,6 +384,7 @@ function ModieDetails({ params, moviesData, totalMovieCount, totalMovies }) {
                     resultCode={movies.code}
                     allDataisTrue
                     releasedate={collection?.releasedate}
+                    actorid={collection?.actorid}
                   />
                 ))}
               </>

@@ -24,6 +24,8 @@ import { useRouter } from "next/router";
 
 function ModieDetails() {
   const router = useRouter();
+  const movieDBURL = process.env.NEXT_PUBLIC_BASE_SOURCE_WEB_URL;
+
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);
   const grid3 = useSelector(selectGrid3);
@@ -40,11 +42,21 @@ function ModieDetails() {
   const [currentpage, setCurrentPage] = useState(1);
   const [postsPerPage] = useState(20);
   const [searchResults, setSearchResults] = useState([]);
+  const [actress, setActress] = useState(null);
 
   const excludeColumns = [];
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentMovie = searchResults?.slice(indexOfFirstPost, indexOfLastPost);
+  useEffect(() => {
+    const actorArray = movies.nameInArray;
+    const actorIdInArray = movies?.actorIdInArray;
+
+    const actor = actorArray.map((e, i) => [
+      { name: e, actorid: actorIdInArray[i] },
+    ]);
+    setActress(actor);
+  }, [movies]);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -277,24 +289,50 @@ function ModieDetails() {
                     </h1>
                   </div>
                 )}
-                <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
-                  {name &&
-                    name?.map((value) => (
-                      <div
-                        key={value}
-                        className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
-                  ${value == activeName && "bg-gray-500 text-white font-bold"}`}
-                        onClick={() => filterData(value, "name")}
-                      >
-                        {value}
-                      </div>
-                    ))}
+                <div className="w-full">
+                  <h2 className="text-center text-xl tracking-widest mb-2">
+                    Actress
+                  </h2>
+                  <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-5">
+                    {actress &&
+                      actress?.map((actor, idx) => (
+                        <div key={idx}>
+                          {actor?.map((value, idx) => (
+                            <div
+                              key={idx}
+                              className={`flex flex-col items-center justify-center p-2  rounded-2xl w-full cursor-pointer
+                            ${
+                              value.name == activeName &&
+                              "bg-gray-500 text-white font-bold"
+                            }`}
+                              onClick={() => filterData(value.name, "name")}
+                            >
+                              <div className="flex flex-col items-center justify-center relative">
+                                <Image
+                                  src={`${movieDBURL}/pics/actress/${value.actorid}_a.jpg`}
+                                  alt="actress"
+                                  height={200}
+                                  width={200}
+                                  objectFit="contain"
+                                  quality={30}
+                                  className="object-contain"
+                                />
+                                <p className="my-2">{value.name}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-xl tracking-widest mb-4">Director</h2>
                   <div
                     className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
                   ${activeDirector && "bg-gray-500 text-white font-bold"}`}
                     onClick={() => filterData(movies?.director, "director")}
                   >
-                    {movies?.director}
+                    <p className="tracking-widest">{movies?.director}</p>
                   </div>
                 </div>
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
@@ -363,6 +401,7 @@ function ModieDetails() {
                 resultCode={movies.code}
                 allDataisTrue
                 releasedate={collection?.releasedate}
+                actorid={collection?.actorid}
               />
             ))}
           </div>

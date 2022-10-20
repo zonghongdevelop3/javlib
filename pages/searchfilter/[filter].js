@@ -170,6 +170,8 @@ function SearchFilter({ moviesData, totalMovieCount, totalMoviesResult }) {
               sourceurl={collection?.sourceurl}
               studio={collection?.studio}
               releasedate={collection?.releasedate}
+              actorid={collection?.actorid}
+              allDataisTrue
             />
           ))}
         </div>

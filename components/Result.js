@@ -9,7 +9,7 @@ import {
   selectInitialgrid,
 } from "../features/gridSlice";
 
-function Result({ collections }) {
+function Result({ collections, allDataisTrue }) {
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);
   const grid3 = useSelector(selectGrid3);
@@ -41,8 +41,10 @@ function Result({ collections }) {
           sourceurl={collection?.sourceurl}
           studio={collection?.studio}
           releasedate={collection.releasedate}
+          actorid={collection?.actorid}
           rating={collection.rating}
           director={collection?.director}
+          allDataisTrue={allDataisTrue}
         />
       ))}
     </div>

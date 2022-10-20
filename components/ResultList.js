@@ -28,6 +28,7 @@ function ResultList({
   releasedate,
   rating,
   director,
+  actorid,
   allDataisTrue,
 }) {
   const router = useRouter();
@@ -37,6 +38,7 @@ function ResultList({
   const genreInArray = genre !== null && genre?.split(" ");
   const extraimageurlInArray =
     extraimageurl !== null && extraimageurl?.split(";");
+  const actorIdInArray = actorid !== null && actorid?.split("/");
 
   const navToDetails = () => {
     dispatch(
@@ -55,6 +57,7 @@ function ResultList({
         releasedate,
         rating,
         director,
+        actorIdInArray,
       })
     );
     if (allDataisTrue) {

@@ -115,7 +115,7 @@ export default function Allmovie({ movie, totalMovieCount }) {
         <Reveal effect="fadeInUp">
           {loading ? <p>Loading...</p> : <Result collections={movie} />}
         </Reveal>
-        <PaginationNew totalMovieCount={totalMovieCount} />
+        <PaginationNew totalMovieCount={totalMovieCount} allDataisTrue />
       </main>
     </div>
   );

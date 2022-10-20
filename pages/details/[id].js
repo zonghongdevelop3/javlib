@@ -23,17 +23,30 @@ import { pageCount } from "../../utils/helpers";
 function ModieDetails({ all, suggest, movieDetail }) {
   const router = useRouter();
   const movieDBURL = process.env.NEXT_PUBLIC_BASE_SOURCE_WEB_URL;
-  const actorIdInArray =
-    movieDetail.actorid !== null && movieDetail.actorid?.split("/");
+  const [actress, setActress] = useState(null);
+
+  useEffect(() => {
+    const actorArray =
+      movieDetail.actor !== null && movieDetail.actor?.split("/");
+    const actorIdInArray =
+      movieDetail.actorid !== null && movieDetail.actorid?.split("/");
+    // const actor = actorArray.map((e, i) => [
+    //   { name: e },
+    //   { actorid: actorIdInArray[i] },
+    // ]);
+    const actor = actorArray.map((e, i) => [
+      { name: e, actorid: actorIdInArray[i] },
+    ]);
+    setActress(actor);
+    console.log("actor", actor);
+  }, [movieDetail]);
 
   const actorId = movieDetail.actorid;
 
   const movieID = movieDetail.id.toLocaleUpperCase();
   const moviesource = `${movieDBURL}/${movieID}`;
   const actorImg = `${movieDBURL}/pics/actress/${actorId}_a.jpg`;
-  console.log(moviesource);
 
-  const dispatch = useDispatch();
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);
   const grid3 = useSelector(selectGrid3);
@@ -171,15 +184,8 @@ function ModieDetails({ all, suggest, movieDetail }) {
   useEffect(() => {
     setActiveImage(imageList[0]);
   }, [imageList]);
-  console.log(movieDetail, suggest);
+  // console.log(movieDetail.bigimageurl.slice(22));
 
-  const fetchme = async () => {
-    const vid = router.query.id;
-    const data = await fetchMoviesDetailsWithSuggest(vid);
-    console.log(data);
-  };
-  const neenameArray = name.concat(actorIdInArray);
-  console.log(neenameArray);
   return (
     <>
       <Zoom bottom>
@@ -191,7 +197,6 @@ function ModieDetails({ all, suggest, movieDetail }) {
             <link rel="icon" href="/favicon.ico" />
           </Head>
           <Header />
-          <button onClick={fetchme}>fetchme</button>
           <main className="mx-auto max-w-screen-lg">
             <div className="max-w-screen-xl mx-auto">
               <div className="">
@@ -303,16 +308,34 @@ function ModieDetails({ all, suggest, movieDetail }) {
                   <h2 className="text-center text-xl tracking-widest mb-2">
                     Actress
                   </h2>
-                  <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
-                    {name &&
-                      name?.map((value) => (
-                        <div
-                          key={value}
-                          className={`flex flex-col items-center justify-center p-2  rounded-2xl w-full cursor-pointer
-                  ${value == activeName && "bg-gray-500 text-white font-bold"}`}
-                          onClick={() => filterData(value, "name")}
-                        >
-                          {value}
+                  <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-5">
+                    {actress &&
+                      actress?.map((actor, idx) => (
+                        <div key={idx}>
+                          {actor?.map((value, idx) => (
+                            <div
+                              key={idx}
+                              className={`flex flex-col items-center justify-center p-2  rounded-2xl w-full cursor-pointer
+                            ${
+                              value.name == activeName &&
+                              "bg-gray-500 text-white font-bold"
+                            }`}
+                              onClick={() => filterData(value.name, "name")}
+                            >
+                              <div className="flex flex-col items-center justify-center relative">
+                                <Image
+                                  src={`${movieDBURL}/pics/actress/${value.actorid}_a.jpg`}
+                                  alt="actress"
+                                  height={200}
+                                  width={200}
+                                  objectFit="contain"
+                                  quality={30}
+                                  className="object-contain"
+                                />
+                                <p className="my-2">{value.name}</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       ))}
                   </div>
@@ -395,6 +418,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
                     resultCode={movies.code}
                     allDataisTrue
                     releasedate={collection?.releasedate}
+                    actorid={collection?.actorid}
                   />
                 ))}
               </>
@@ -418,6 +442,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
                       resultCode={movies.code}
                       allDataisTrue
                       releasedate={collection?.releasedate}
+                      actorid={collection?.actorid}
                     />
                   ))}
               </>
