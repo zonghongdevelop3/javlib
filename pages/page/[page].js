@@ -112,7 +112,11 @@ export default function Home({ moviesData, totalMovieCount, currentPostpage }) {
 
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
-          {loading ? <p>Loading...</p> : <Result collections={currentMovie} />}
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <Result collections={currentMovie} allDataisTrue />
+          )}
         </Reveal>
 
         <PaginationNew
@@ -144,7 +148,7 @@ export async function getStaticPaths() {
 
   return {
     paths,
-    fallback: true,
+    fallback: "blocking",
   };
 }
 

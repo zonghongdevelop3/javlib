@@ -39,7 +39,6 @@ function ResultList({
   const extraimageurlInArray =
     extraimageurl !== null && extraimageurl?.split(";");
   const actorIdInArray = actorid !== null && actorid?.split("/");
-
   const navToDetails = () => {
     dispatch(
       navDetail({

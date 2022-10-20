@@ -3,10 +3,11 @@ import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { AiOutlineLink } from "react-icons/ai";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Header from "../../../../components/Header";
-import { selectDetail, selectMovie } from "../../../../features/movieSlice";
+import { selectDetail } from "../../../../features/movieSlice";
 const SuggestList = dynamic(() => import("../../../../components/SuggestList"));
 
 import Zoom from "react-reveal/Zoom";
@@ -15,12 +16,12 @@ import {
   selectGrid3,
   selectGrid5,
   selectInitialgrid,
-  resetGrid,
 } from "../../../../features/gridSlice";
 import { EyeIcon } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
 import { pageCount, filterAllData } from "../../../../utils/helpers";
 import { show_per_page } from "../../../../config";
+import { fetchMoviesDetailsMagnetlinks } from "../../../../utils/fetchmovies";
 
 function ModieDetails({ params, moviesData, totalMovieCount, totalMovies }) {
   let pageIntoArray = Array.from(Array(totalMovieCount).keys());
@@ -46,6 +47,20 @@ function ModieDetails({ params, moviesData, totalMovieCount, totalMovies }) {
   const [activeKeyword, setActiveKeyword] = useState("all");
   const [movie, setMovie] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(null);
+  const [magnetLink, setMagnetLink] = useState([]);
+
+  const fetchmagnet = async () => {
+    const id = movies.id;
+    const data = await fetchMoviesDetailsMagnetlinks(id);
+    setMagnetLink(data);
+  };
+
+  useEffect(() => {
+    if (movies.id) {
+      fetchmagnet();
+    }
+  }, [movies]);
 
   useEffect(() => {
     const actorArray = movies.nameInArray;
@@ -330,6 +345,24 @@ function ModieDetails({ params, moviesData, totalMovieCount, totalMovies }) {
                     ))}
                 </div>
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
+                  {magnetLink?.magnets?.map((magnet, idx) => (
+                    <div
+                      key={idx}
+                      value={magnet.magnet}
+                      onClick={() => {
+                        navigator.clipboard.writeText(magnet.magnet);
+                        setCopied(idx);
+                      }}
+                      className={`flex items-center justify-center space-x-2 cursor-pointer ${
+                        copied === idx && "text-emerald-400 font-bold"
+                      }`}
+                    >
+                      <p>{magnet.vid}</p>
+                      <AiOutlineLink className="w-5 h-5" />
+                    </div>
+                  ))}
+                </div>
+                <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
                   <a
                     target="_blank"
                     href={movies?.sourceurl}
@@ -438,7 +471,7 @@ export async function getStaticPaths() {
 
   return {
     paths,
-    fallback: true,
+    fallback: "blocking",
   };
 }
 

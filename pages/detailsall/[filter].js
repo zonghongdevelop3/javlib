@@ -23,6 +23,8 @@ import { EyeIcon } from "@heroicons/react/outline";
 
 import { useRouter } from "next/router";
 import { pageCount, filterAllData } from "../../utils/helpers";
+import { fetchMoviesDetailsMagnetlinks } from "../../utils/fetchmovies";
+import { AiOutlineLink } from "react-icons/ai";
 
 function ModieDetails({ moviesData, totalMovieCount, totalMovies }) {
   const router = useRouter();
@@ -48,6 +50,8 @@ function ModieDetails({ moviesData, totalMovieCount, totalMovies }) {
   const [activeDirector, setActiveDirector] = useState("");
   const [activeStudio, setActiveStudio] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("all");
+  const [magnetLink, setMagnetLink] = useState([]);
+  const [copied, setCopied] = useState(null);
 
   useEffect(() => {
     const actorArray = movies.nameInArray;
@@ -143,6 +147,18 @@ function ModieDetails({ moviesData, totalMovieCount, totalMovies }) {
   useEffect(() => {
     setActiveImage(imageList[0]);
   }, [imageList]);
+
+  const fetchmagnet = async () => {
+    const id = movies.id;
+    const data = await fetchMoviesDetailsMagnetlinks(id);
+    setMagnetLink(data);
+  };
+
+  useEffect(() => {
+    if (movies.id) {
+      fetchmagnet();
+    }
+  }, [movies]);
 
   return (
     <>
@@ -325,6 +341,24 @@ function ModieDetails({ moviesData, totalMovieCount, totalMovies }) {
                     ))}
                 </div>
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
+                  {magnetLink?.magnets?.map((magnet, idx) => (
+                    <div
+                      key={idx}
+                      value={magnet.magnet}
+                      onClick={() => {
+                        navigator.clipboard.writeText(magnet.magnet);
+                        setCopied(idx);
+                      }}
+                      className={`flex items-center justify-center space-x-2 cursor-pointer ${
+                        copied === idx && "text-emerald-400 font-bold"
+                      }`}
+                    >
+                      <p>{magnet.vid}</p>
+                      <AiOutlineLink className="w-5 h-5" />
+                    </div>
+                  ))}
+                </div>
+                <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
                   <a
                     target="_blank"
                     href={movies?.sourceurl}
@@ -425,7 +459,7 @@ export async function getStaticPaths() {
 
   return {
     paths,
-    fallback: true,
+    fallback: "blocking",
   };
 }
 

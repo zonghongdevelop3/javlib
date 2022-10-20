@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Header from "../../components/Header";
 import { selectDetail, selectMovie } from "../../features/movieSlice";
-
+import { AiOutlineLink } from "react-icons/ai";
 import SuggestList from "../../components/SuggestList";
 import Zoom from "react-reveal/Zoom";
 import {
@@ -17,23 +17,24 @@ import {
 import { EyeIcon } from "@heroicons/react/outline";
 import Pagination from "../../components/Pagination";
 import { useRouter } from "next/router";
-import { fetchMoviesDetailsWithSuggest } from "../../utils/fetchmovies";
+import {
+  fetchMoviesDetailsWithSuggest,
+  fetchMoviesDetailsMagnetlinks,
+} from "../../utils/fetchmovies";
 import { pageCount } from "../../utils/helpers";
 
 function ModieDetails({ all, suggest, movieDetail }) {
   const router = useRouter();
   const movieDBURL = "https://www.javsee.one";
   const [actress, setActress] = useState(null);
+  const [copied, setCopied] = useState(null);
 
   useEffect(() => {
     const actorArray =
       movieDetail.actor !== null && movieDetail.actor?.split("/");
     const actorIdInArray =
       movieDetail.actorid !== null && movieDetail.actorid?.split("/");
-    // const actor = actorArray.map((e, i) => [
-    //   { name: e },
-    //   { actorid: actorIdInArray[i] },
-    // ]);
+
     const actor = actorArray.map((e, i) => [
       { name: e, actorid: actorIdInArray[i] },
     ]);
@@ -66,6 +67,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
   const [postsPerPage] = useState(20);
   const [showSuggest, setShowSuggest] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [magnetLink, setMagnetLink] = useState([]);
 
   const excludeColumns = [];
   const indexOfLastPost = currentpage * postsPerPage;
@@ -185,6 +187,18 @@ function ModieDetails({ all, suggest, movieDetail }) {
     setActiveImage(imageList[0]);
   }, [imageList]);
   // console.log(movieDetail.bigimageurl.slice(22));
+
+  const fetchmagnet = async () => {
+    const id = movies.id;
+    const data = await fetchMoviesDetailsMagnetlinks(id);
+    setMagnetLink(data);
+  };
+
+  useEffect(() => {
+    if (movies.id) {
+      fetchmagnet();
+    }
+  }, [movies]);
 
   return (
     <>
@@ -368,6 +382,24 @@ function ModieDetails({ all, suggest, movieDetail }) {
                     ))}
                 </div>
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
+                  {magnetLink?.magnets?.map((magnet, idx) => (
+                    <div
+                      key={idx}
+                      value={magnet.magnet}
+                      onClick={() => {
+                        navigator.clipboard.writeText(magnet.magnet);
+                        setCopied(idx);
+                      }}
+                      className={`flex items-center justify-center space-x-2 cursor-pointer ${
+                        copied === idx && "text-emerald-400 font-bold"
+                      }`}
+                    >
+                      <p>{magnet.vid}</p>
+                      <AiOutlineLink className="w-5 h-5" />
+                    </div>
+                  ))}
+                </div>
+                <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
                   <a
                     target="_blank"
                     href={moviesource}
@@ -416,7 +448,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
                     filePath={collection?.filePath}
                     sourceurl={collection?.sourceurl}
                     resultCode={movies.code}
-                    allDataisTrue
+                    // allDataisTrue
                     releasedate={collection?.releasedate}
                     actorid={collection?.actorid}
                   />
@@ -440,7 +472,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
                       filePath={collection?.filePath}
                       sourceurl={collection?.sourceurl}
                       resultCode={movies.code}
-                      allDataisTrue
+                      // allDataisTrue
                       releasedate={collection?.releasedate}
                       actorid={collection?.actorid}
                     />

@@ -54,10 +54,14 @@ function SuggestList({
         studio,
         director,
         actorIdInArray,
+        allDataisTrue,
       })
     );
-
-    router.push(`/detailsall`);
+    if (allDataisTrue) {
+      router.push(`/detailsall`);
+    } else {
+      router.push(`/details/${id}`);
+    }
   };
   if (image == null) return false;
   return (

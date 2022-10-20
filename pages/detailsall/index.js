@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 
-import Link from "next/link";
 import Head from "next/head";
 import Image from "next/image";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Header from "../../components/Header";
-import { selectDetail, selectMovie } from "../../features/movieSlice";
+import { AiOutlineLink } from "react-icons/ai";
+
+import { selectDetail } from "../../features/movieSlice";
 const SuggestList = dynamic(() => import("../../components/SuggestList"));
 const Pagination = dynamic(() => import("../../components/Pagination"));
 
@@ -16,9 +17,8 @@ import {
   selectGrid3,
   selectGrid5,
   selectInitialgrid,
-  resetGrid,
 } from "../../features/gridSlice";
-import { addMovie } from "../../features/movieSlice";
+import { fetchMoviesDetailsMagnetlinks } from "../../utils/fetchmovies";
 import { EyeIcon } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
 
@@ -40,14 +40,30 @@ function ModieDetails() {
   const [activeStudio, setActiveStudio] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("all");
   const [currentpage, setCurrentPage] = useState(1);
-  const [postsPerPage] = useState(20);
+  const [postsPerPage] = useState(12);
   const [searchResults, setSearchResults] = useState([]);
   const [actress, setActress] = useState(null);
+  const [magnetLink, setMagnetLink] = useState([]);
+  const [copied, setCopied] = useState(null);
 
   const excludeColumns = [];
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentMovie = searchResults?.slice(indexOfFirstPost, indexOfLastPost);
+
+  const fetchmagnet = async () => {
+    const id = movies.id;
+    const data = await fetchMoviesDetailsMagnetlinks(id);
+    setMagnetLink(data);
+    console.log(data);
+  };
+
+  useEffect(() => {
+    if (movies.id) {
+      fetchmagnet();
+    }
+  }, [movies]);
+
   useEffect(() => {
     const actorArray = movies.nameInArray;
     const actorIdInArray = movies?.actorIdInArray;
@@ -182,6 +198,7 @@ function ModieDetails() {
             <link rel="icon" href="/favicon.ico" />
           </Head>
           <Header />
+          <button onClick={fetchmagnet}>fetchme</button>
           <main className="mx-auto max-w-screen-lg">
             <div className="max-w-screen-xl mx-auto">
               <div className="">
@@ -350,6 +367,24 @@ function ModieDetails() {
                         {value}
                       </div>
                     ))}
+                </div>
+                <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
+                  {magnetLink?.magnets?.map((magnet, idx) => (
+                    <div
+                      key={idx}
+                      value={magnet.magnet}
+                      onClick={() => {
+                        navigator.clipboard.writeText(magnet.magnet);
+                        setCopied(idx);
+                      }}
+                      className={`flex items-center justify-center space-x-2 cursor-pointer ${
+                        copied === idx && "text-emerald-400 font-bold"
+                      }`}
+                    >
+                      <p>{magnet.id}</p>
+                      <AiOutlineLink className="w-5 h-5" />
+                    </div>
+                  ))}
                 </div>
                 <div className="place-items-center  mb-10 w-full  my-1 grid grid-flow-row-dense grid-cols-3 xl:grid-cols-4">
                   <a
