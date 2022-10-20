@@ -113,9 +113,13 @@ export default function Allmovie({ movie, totalMovieCount }) {
 
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
-          {loading ? <p>Loading...</p> : <Result collections={movie} />}
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <Result collections={movie} allDataisTrue />
+          )}
         </Reveal>
-        <PaginationNew totalMovieCount={totalMovieCount} allDataisTrue />
+        <PaginationNew totalMovieCount={totalMovieCount} />
       </main>
     </div>
   );

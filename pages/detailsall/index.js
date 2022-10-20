@@ -24,7 +24,7 @@ import { useRouter } from "next/router";
 
 function ModieDetails() {
   const router = useRouter();
-  const movieDBURL = process.env.NEXT_PUBLIC_BASE_SOURCE_WEB_URL;
+  const movieDBURL = "https://www.javsee.one";
 
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);

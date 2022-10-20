@@ -27,7 +27,7 @@ import { pageCount, filterAllData } from "../../utils/helpers";
 function ModieDetails({ moviesData, totalMovieCount, totalMovies }) {
   const router = useRouter();
   const moviesDB = JSON.parse(moviesData);
-  const movieDBURL = process.env.NEXT_PUBLIC_BASE_SOURCE_WEB_URL;
+  const movieDBURL = "https://www.javsee.one";
   const [actress, setActress] = useState(null);
 
   const currentParam = router.query.filter;
