@@ -21,6 +21,7 @@ import {
 import { fetchMoviesDetailsMagnetlinks } from "../../utils/fetchmovies";
 import { EyeIcon } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
+import { filterAllData } from "../../utils/helpers";
 
 function ModieDetails({ allmovies }) {
   const router = useRouter();
@@ -49,7 +50,17 @@ function ModieDetails({ allmovies }) {
   const excludeColumns = [];
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentMovie = searchResults?.slice(indexOfFirstPost, indexOfLastPost);
+  const [currentMovie, setCurrentMovie] = useState([]);
+
+  useEffect(() => {
+    if (allmovies) {
+      setCurrentMovie(searchResults?.slice(indexOfFirstPost, indexOfLastPost));
+    }
+  }, [searchResults, allmovies]);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const fetchmagnet = async () => {
     const id = movies.id;
@@ -72,10 +83,6 @@ function ModieDetails({ allmovies }) {
     ]);
     setActress(actor);
   }, [movies]);
-
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
 
   const getUniqueName = () => {
     let unique = movies.nameInArray?.map((name) => name);
@@ -111,17 +118,15 @@ function ModieDetails({ allmovies }) {
             new Date(a?.releasedate).getTime() -
             new Date(b?.releasedate).getTime()
         );
+      const suggestRes = filterAllData(sortData, name[0]);
 
-      const suggestRes = sortData?.filter((collection) =>
-        collection.actor?.includes(name[0])
-      );
       setSearchResults(suggestRes);
       setActiveKeyword("");
       setActiveName("");
       setActiveSeries("");
     };
     getSuggestMovie();
-  }, [allmovies]);
+  }, [allmovies, name]);
 
   const filterData = (value, item) => {
     const Value = value.toLocaleUpperCase().trim();
