@@ -32,6 +32,8 @@ module.exports = {
       "javbus.com",
       "www.seejav.cam",
       "www.seedmm.fun",
+      "c0.jdbstatic.com",
+      "javsee.one",
     ],
   },
 };
