@@ -29,6 +29,7 @@ const nextConfig = {
       "pics.dmm.co.jp",
       "d37zd80kuxb0b6.cloudfront.net",
       "www.javsee.one",
+      "javbus.com",
     ],
   },
 };

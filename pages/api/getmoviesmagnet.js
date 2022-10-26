@@ -15,12 +15,13 @@ export default async function handler(req, res) {
 
   const magnetRes = await fetch(url);
   const data = await magnetRes.json();
+  console.log("Value", Value);
 
   const filteredData = data?.filter((item) => {
     return Object?.keys(item)?.some((key) =>
       excludeColumns.includes(key)
         ? false
-        : item[key]?.toString().toLocaleUpperCase().includes(Value)
+        : item["id"]?.toString().toLocaleUpperCase().includes(Value)
     );
   });
   console.log("filteredData", filteredData);

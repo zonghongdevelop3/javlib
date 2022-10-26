@@ -30,11 +30,11 @@ function PaginationNew({
                       : `/searchfilter/${currentParam}/page/${page + 1}`
                   }
                 >
-                  <a className="page-link">{page + 1}</a>
+                  <p>{page + 1}</p>
                 </Link>
               ) : (
                 <Link href={page === 0 ? "/allmovies/" : `/page/${page + 1}`}>
-                  <a className="page-link">{page + 1}</a>
+                  <p>{page + 1}</p>
                 </Link>
               )}
             </li>
