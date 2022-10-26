@@ -30,6 +30,8 @@ const nextConfig = {
       "d37zd80kuxb0b6.cloudfront.net",
       "www.javsee.one",
       "javbus.com",
+      "www.seejav.cam",
+      "www.seedmm.fun",
     ],
   },
 };
