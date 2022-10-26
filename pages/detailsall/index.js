@@ -22,7 +22,7 @@ import { fetchMoviesDetailsMagnetlinks } from "../../utils/fetchmovies";
 import { EyeIcon } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
 
-function ModieDetails() {
+function ModieDetails({ allmovies }) {
   const router = useRouter();
   const movieDBURL = "https://www.javsee.one";
 
@@ -55,7 +55,6 @@ function ModieDetails() {
     const id = movies.id;
     const data = await fetchMoviesDetailsMagnetlinks(id);
     setMagnetLink(data);
-    console.log(data);
   };
 
   useEffect(() => {
@@ -93,8 +92,8 @@ function ModieDetails() {
     return [...new Set(unique)];
   };
 
-  const name = <movies></movies> ? getUniqueName() : null;
-  const keywords = <movies></movies> ? getUniqueKeywords() : null;
+  const name = movies ? getUniqueName() : null;
+  const keywords = movies ? getUniqueKeywords() : null;
 
   useEffect(() => {
     let newImageList = [];
@@ -104,30 +103,25 @@ function ModieDetails() {
   }, [movies]);
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      const movieRes = await fetch(
-        "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
-      );
-      await movieRes.json().then((data) => {
-        const sortData = data
-          .slice()
-          .sort(
-            (b, a) =>
-              new Date(a?.releasedate).getTime() -
-              new Date(b?.releasedate).getTime()
-          );
-
-        const suggest = sortData?.filter((collection) =>
-          collection.actor?.includes(name[0])
+    const getSuggestMovie = () => {
+      const sortData = allmovies
+        ?.slice()
+        .sort(
+          (b, a) =>
+            new Date(a?.releasedate).getTime() -
+            new Date(b?.releasedate).getTime()
         );
-        setSearchResults(suggest);
-        setActiveKeyword("");
-        setActiveName("");
-        setActiveSeries("");
-      });
+
+      const suggestRes = sortData?.filter((collection) =>
+        collection.actor?.includes(name[0])
+      );
+      setSearchResults(suggestRes);
+      setActiveKeyword("");
+      setActiveName("");
+      setActiveSeries("");
     };
-    fetchAllData();
-  }, [movies]);
+    getSuggestMovie();
+  }, [allmovies]);
 
   const filterData = (value, item) => {
     const Value = value.toLocaleUpperCase().trim();
@@ -472,3 +466,16 @@ function ModieDetails() {
 }
 
 export default ModieDetails;
+export async function getStaticProps() {
+  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_ALL_MOVIE_URL);
+  const data = await movieRes.json();
+  const initialData = data
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  return {
+    props: { allmovies: initialData },
+  };
+}

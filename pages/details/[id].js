@@ -12,11 +12,9 @@ import {
   selectGrid3,
   selectGrid5,
   selectInitialgrid,
-  resetGrid,
 } from "../../features/gridSlice";
 import { EyeIcon } from "@heroicons/react/outline";
 import Pagination from "../../components/Pagination";
-import { useRouter } from "next/router";
 import {
   fetchMoviesDetailsWithSuggest,
   fetchMoviesDetailsMagnetlinks,
@@ -24,30 +22,11 @@ import {
 import { pageCount } from "../../utils/helpers";
 
 function ModieDetails({ all, suggest, movieDetail }) {
-  const router = useRouter();
   const movieDBURL = "https://www.javsee.one";
   const [actress, setActress] = useState(null);
   const [copied, setCopied] = useState(null);
-
-  useEffect(() => {
-    const actorArray =
-      movieDetail.actor !== null && movieDetail.actor?.split("/");
-    const actorIdInArray =
-      movieDetail.actorid !== null && movieDetail.actorid?.split("/");
-
-    const actor = actorArray.map((e, i) => [
-      { name: e, actorid: actorIdInArray[i] },
-    ]);
-    setActress(actor);
-    console.log("actor", actor);
-  }, [movieDetail]);
-
-  const actorId = movieDetail.actorid;
-
   const movieID = movieDetail.id.toLocaleUpperCase();
   const moviesource = `${movieDBURL}/${movieID}`;
-  const actorImg = `${movieDBURL}/pics/actress/${actorId}_a.jpg`;
-
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);
   const grid3 = useSelector(selectGrid3);
@@ -64,15 +43,29 @@ function ModieDetails({ all, suggest, movieDetail }) {
   const [activeStudio, setActiveStudio] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("all");
   const [currentpage, setCurrentPage] = useState(1);
-  const [postsPerPage] = useState(20);
+  const [postsPerPage] = useState(4);
   const [showSuggest, setShowSuggest] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [magnetLink, setMagnetLink] = useState([]);
 
+  useEffect(() => {
+    const actorArray =
+      movieDetail.actor !== null && movieDetail.actor?.split("/");
+    const actorIdInArray =
+      movieDetail.actorid !== null && movieDetail.actorid?.split("/");
+
+    const actor = actorArray.map((e, i) => [
+      { name: e, actorid: actorIdInArray[i] },
+    ]);
+    setActress(actor);
+  }, [movieDetail]);
+
   const excludeColumns = [];
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentMovie = searchResults?.slice(indexOfFirstPost, indexOfLastPost);
+  const currentMovie = !showSuggest
+    ? suggest?.slice(indexOfFirstPost, indexOfLastPost)
+    : searchResults?.slice(indexOfFirstPost, indexOfLastPost);
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -97,7 +90,6 @@ function ModieDetails({ all, suggest, movieDetail }) {
 
   useEffect(() => {
     let newImageList = [];
-
     newImageList.push(movies.image, ...movies?.extraimageurlInArray);
     setImageList(newImageList);
   }, [movies]);
@@ -157,8 +149,10 @@ function ModieDetails({ all, suggest, movieDetail }) {
       setActiveDirector("");
       setActiveStudio("");
     }
-    if (Value === "") setSearchResults(dataList);
-    else {
+    if (Value === "") {
+      setShowSuggest(false);
+      setSearchResults(dataList);
+    } else {
       const filteredData = dataList.filter((item) => {
         return Object.keys(item).some((key) =>
           excludeColumns.includes(key)
@@ -166,19 +160,17 @@ function ModieDetails({ all, suggest, movieDetail }) {
             : item[key]?.toString().toLocaleUpperCase().includes(Value)
         );
       });
+      setShowSuggest(true);
       setSearchResults(filteredData);
     }
   };
 
   useEffect(() => {
     const initialfilter = () => {
-      setSearchResults(
-        dataList?.filter((collection) => collection.actor?.includes(name[0]))
-      );
       setActiveKeyword("");
       setActiveName("");
       setActiveSeries("");
-      setShowSuggest(true);
+      setShowSuggest(false);
     };
     initialfilter();
   }, [dataList, movies]);
@@ -186,7 +178,6 @@ function ModieDetails({ all, suggest, movieDetail }) {
   useEffect(() => {
     setActiveImage(imageList[0]);
   }, [imageList]);
-  // console.log(movieDetail.bigimageurl.slice(22));
 
   const fetchmagnet = async () => {
     const id = movies.id;
@@ -199,6 +190,8 @@ function ModieDetails({ all, suggest, movieDetail }) {
       fetchmagnet();
     }
   }, [movies]);
+
+  console.log(magnetLink);
 
   return (
     <>
@@ -225,7 +218,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
                       objectFit="contain"
                       src={activeImage}
                       alt="poster/image"
-                      quality={65}
+                      quality={50}
                       priority
                       aria-hidden="true"
                       placeholder="blur"
@@ -243,7 +236,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
                       objectFit="fill"
                       src={movieDetail?.bigimageurl}
                       alt="poster/image"
-                      quality={65}
+                      quality={50}
                       priority
                       aria-hidden="true"
                       placeholder="blur"
@@ -415,7 +408,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
                         copied === idx && "text-emerald-400 font-bold"
                       }`}
                     >
-                      <p>{magnet.vid}</p>
+                      <p>{magnet.id}</p>
                       <AiOutlineLink className="w-5 h-5" />
                     </div>
                   ))}
@@ -441,7 +434,8 @@ function ModieDetails({ all, suggest, movieDetail }) {
         </div>
         <div>
           <h1 className=" text-center text-2xl lg:text-4xl font-medium">
-            Suggest Movie ({suggest?.length > 0 && suggest?.length} movies)
+            Suggest Movie (
+            {!showSuggest ? suggest?.length : searchResults?.length} movies)
           </h1>
           <div
             className={`px-5 my-10 grid grid-flow-row-dense
@@ -452,62 +446,32 @@ function ModieDetails({ all, suggest, movieDetail }) {
 
        `}
           >
-            {!showSuggest && searchResults ? (
-              <>
-                {suggest?.map((collection) => (
-                  <SuggestList
-                    key={collection?.id}
-                    id={collection?.id}
-                    code={collection?.id}
-                    image={collection?.bigimageurl}
-                    extraimageurl={collection?.extraimageurl}
-                    name={collection?.actor}
-                    title={collection?.title}
-                    genre={collection?.genre}
-                    publisher={collection?.studio}
-                    series={collection?.tag}
-                    filePath={collection?.filePath}
-                    sourceurl={collection?.sourceurl}
-                    resultCode={movies.code}
-                    // allDataisTrue
-                    releasedate={collection?.releasedate}
-                    actorid={collection?.actorid}
-                  />
-                ))}
-              </>
-            ) : (
-              <>
-                {showSuggest &&
-                  currentMovie?.map((collection) => (
-                    <SuggestList
-                      key={collection?.id}
-                      id={collection?.id}
-                      code={collection?.id}
-                      image={collection?.bigimageurl}
-                      extraimageurl={collection?.extraimageurl}
-                      name={collection?.actor}
-                      title={collection?.title}
-                      genre={collection?.genre}
-                      publisher={collection?.studio}
-                      series={collection?.tag}
-                      filePath={collection?.filePath}
-                      sourceurl={collection?.sourceurl}
-                      resultCode={movies.code}
-                      // allDataisTrue
-                      releasedate={collection?.releasedate}
-                      actorid={collection?.actorid}
-                    />
-                  ))}
-              </>
-            )}
+            {currentMovie?.map((collection) => (
+              <SuggestList
+                key={collection?.id}
+                id={collection?.id}
+                code={collection?.id}
+                image={collection?.bigimageurl}
+                extraimageurl={collection?.extraimageurl}
+                name={collection?.actor}
+                title={collection?.title}
+                genre={collection?.genre}
+                publisher={collection?.studio}
+                series={collection?.tag}
+                filePath={collection?.filePath}
+                sourceurl={collection?.sourceurl}
+                resultCode={movies.code}
+                releasedate={collection?.releasedate}
+                actorid={collection?.actorid}
+              />
+            ))}
           </div>
-          {showSuggest && (
-            <Pagination
-              postsPerPage={postsPerPage}
-              totalPosts={searchResults?.length}
-              paginate={paginate}
-            />
-          )}
+
+          <Pagination
+            postsPerPage={postsPerPage}
+            totalPosts={!showSuggest ? suggest.length : searchResults?.length}
+            paginate={paginate}
+          />
         </div>
       </Zoom>
     </>
@@ -521,10 +485,7 @@ export async function getStaticPaths() {
   const data = await movieRes.json();
 
   let totalMovieCount = pageCount(data.length);
-
-  // totalMovieCount number convert into a array
   let pageIntoArray = Array.from(Array(totalMovieCount).keys());
-
   let paths = [];
 
   pageIntoArray.map((path) =>
@@ -554,6 +515,6 @@ export async function getStaticProps({ params }) {
         new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
     );
   return {
-    props: { all: initialData, movieDetail: movieDetail, suggest, suggest },
+    props: { all: initialData, movieDetail: movieDetail, suggest },
   };
 }
