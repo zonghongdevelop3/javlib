@@ -19,7 +19,7 @@ function Pagination({ postsPerPage, totalPosts, paginate }) {
             key={number}
             className={`cursor-pointer hover:animate-pulse p-2 mb-2 ${
               number == currentpage &&
-              "bg-gray-300 rounded-full leading-loose text-gray-800"
+              "bg-gray-300 rounded-full leading-loose text-emerald-500"
             }`}
           >
             <a className="tracking-widest">{number}</a>
