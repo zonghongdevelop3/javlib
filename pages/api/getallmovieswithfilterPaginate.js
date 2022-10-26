@@ -7,7 +7,9 @@ export default async function handler(req, res) {
   const { searchterm, page } = JSON.parse(req.body);
   const Value = searchterm.toLocaleUpperCase().trim();
 
-  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_ALL_MOVIE_URL);
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  );
   const data = await movieRes.json();
   const sortData = data
     .slice()

@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import { show_per_page } from "../config";
 
 export default function Allmovie({ movie, totalMovieCount }) {
+  console.log(movie);
   const router = useRouter();
   const movies = movie;
   const dispatch = useDispatch();
@@ -129,7 +130,9 @@ export async function getServerSideProps({ req, res }) {
     "Cache-Control",
     "public, s-maxage=10, stale-while-revalidate=59"
   );
-  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_ALL_MOVIE_URL);
+  const movieRes = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  );
   const data = await movieRes.json();
   // count how many pages
   let totalMovieCount = pageCount(data.length);

@@ -18,7 +18,10 @@ import {
   selectGrid5,
   selectInitialgrid,
 } from "../../features/gridSlice";
-import { fetchMoviesDetailsMagnetlinks } from "../../utils/fetchmovies";
+import {
+  fetchMoviesDetailsMagnetlinks,
+  fetchMoviesDetailsWithAllSuggest,
+} from "../../utils/fetchmovies";
 import { EyeIcon } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
 import { filterAllData } from "../../utils/helpers";
@@ -48,19 +51,11 @@ function ModieDetails({ allmovies }) {
   const [copied, setCopied] = useState(null);
 
   const excludeColumns = [];
+  const [showSuggest, setShowSuggest] = useState(false);
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const [currentMovie, setCurrentMovie] = useState([]);
-
-  useEffect(() => {
-    if (allmovies) {
-      setCurrentMovie(searchResults?.slice(indexOfFirstPost, indexOfLastPost));
-    }
-  }, [searchResults, allmovies]);
-
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+  const [currentMovie, setCurrentMovie] = useState(null);
+  // const currentMovie = searchResults?.slice(indexOfFirstPost, indexOfLastPost);
 
   const fetchmagnet = async () => {
     const id = movies.id;
@@ -108,25 +103,6 @@ function ModieDetails({ allmovies }) {
     newImageList.push(movies.image, ...movies?.extraimageurlInArray);
     setImageList(newImageList);
   }, [movies]);
-
-  useEffect(() => {
-    const getSuggestMovie = () => {
-      const sortData = allmovies
-        ?.slice()
-        .sort(
-          (b, a) =>
-            new Date(a?.releasedate).getTime() -
-            new Date(b?.releasedate).getTime()
-        );
-      const suggestRes = filterAllData(sortData, name[0]);
-
-      setSearchResults(suggestRes);
-      setActiveKeyword("");
-      setActiveName("");
-      setActiveSeries("");
-    };
-    getSuggestMovie();
-  }, [allmovies, name]);
 
   const filterData = (value, item) => {
     const Value = value.toLocaleUpperCase().trim();
@@ -186,6 +162,27 @@ function ModieDetails({ allmovies }) {
     setActiveImage(imageList[0]);
   }, [imageList]);
 
+  useEffect(() => {
+    const getSuggestMovie = async () => {
+      const movie = await fetchMoviesDetailsWithAllSuggest(movies.code);
+      setSearchResults(movie?.suggest);
+      setShowSuggest(true);
+    };
+    getSuggestMovie();
+  }, [movies]);
+
+  useEffect(() => {
+    const currentMovies = searchResults?.slice(
+      indexOfFirstPost,
+      indexOfLastPost
+    );
+    setCurrentMovie(currentMovies);
+  }, [searchResults, indexOfLastPost, indexOfFirstPost]);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <>
       <Zoom bottom>
@@ -208,7 +205,6 @@ function ModieDetails({ allmovies }) {
                       }
                       width={800}
                       height={800}
-                      objectFit="contain"
                       src={activeImage}
                       alt="poster/image"
                       quality={65}
@@ -221,12 +217,9 @@ function ModieDetails({ allmovies }) {
                     />
                   ) : (
                     <Image
-                      className={
-                        "w-full rounded-lg cursor-pointer object-contain"
-                      }
+                      className={"w-full rounded-lg cursor-pointer scale-50"}
                       width={800}
                       height={800}
-                      objectFit="fill"
                       src={movies?.image}
                       alt="poster/image"
                       quality={65}
@@ -437,26 +430,27 @@ function ModieDetails({ allmovies }) {
 
        `}
           >
-            {currentMovie?.map((collection) => (
-              <SuggestList
-                key={collection?.id}
-                id={collection?.id}
-                code={collection?.id}
-                image={collection?.bigimageurl}
-                extraimageurl={collection?.extraimageurl}
-                name={collection?.actor}
-                title={collection?.title}
-                genre={collection?.genre}
-                publisher={collection?.studio}
-                series={collection?.tag}
-                filePath={collection?.filePath}
-                sourceurl={collection?.sourceurl}
-                resultCode={movies.code}
-                allDataisTrue
-                releasedate={collection?.releasedate}
-                actorid={collection?.actorid}
-              />
-            ))}
+            {showSuggest &&
+              currentMovie?.map((collection) => (
+                <SuggestList
+                  key={collection?.id}
+                  id={collection?.id}
+                  code={collection?.id}
+                  image={collection?.bigimageurl}
+                  extraimageurl={collection?.extraimageurl}
+                  name={collection?.actor}
+                  title={collection?.title}
+                  genre={collection?.genre}
+                  publisher={collection?.studio}
+                  series={collection?.tag}
+                  filePath={collection?.filePath}
+                  sourceurl={collection?.sourceurl}
+                  resultCode={movies.code}
+                  allDataisTrue
+                  releasedate={collection?.releasedate}
+                  actorid={collection?.actorid}
+                />
+              ))}
           </div>
 
           <Pagination
