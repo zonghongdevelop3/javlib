@@ -210,9 +210,6 @@ function ModieDetails({ all, suggest, movieDetail }) {
                 <div className="flex items-center justify-center w-full mb-4">
                   {activeImage ? (
                     <Image
-                      className={
-                        "w-full rounded-lg cursor-pointer object-contain"
-                      }
                       width={800}
                       height={800}
                       objectFit="contain"
@@ -228,12 +225,9 @@ function ModieDetails({ all, suggest, movieDetail }) {
                     />
                   ) : (
                     <Image
-                      className={
-                        "w-full rounded-lg cursor-pointer object-contain"
-                      }
                       width={800}
                       height={800}
-                      objectFit="fill"
+                      objectFit="contain"
                       src={movieDetail?.bigimageurl}
                       alt="poster/image"
                       quality={50}
