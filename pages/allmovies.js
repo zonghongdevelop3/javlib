@@ -12,7 +12,6 @@ import { pageCount } from "../utils/helpers";
 import PaginationNew from "../components/PaginationNew";
 import { useRouter } from "next/router";
 import { show_per_page } from "../config";
-import { fetchAllMovies } from "../utils/fetchmovies";
 
 export default function Allmovie({ movie, totalMovieCount, all }) {
   console.log("all", all);
