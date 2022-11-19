@@ -12,9 +12,10 @@ import { pageCount } from "../utils/helpers";
 import PaginationNew from "../components/PaginationNew";
 import { useRouter } from "next/router";
 import { show_per_page } from "../config";
+import { fetchAllMovies } from "../utils/fetchmovies";
 
-export default function Allmovie({ movie, totalMovieCount }) {
-  console.log(movie);
+export default function Allmovie({ movie, totalMovieCount, all }) {
+  console.log("all", all);
   const router = useRouter();
   const movies = movie;
   const dispatch = useDispatch();
@@ -111,7 +112,6 @@ export default function Allmovie({ movie, totalMovieCount }) {
       </Head>
       <Header collections={movies} />
       <SortingHeader setSortingCriteria={setSortingCriteria} />
-
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
           {loading ? (
@@ -130,13 +130,31 @@ export async function getServerSideProps({ req, res }) {
     "Cache-Control",
     "public, s-maxage=10, stale-while-revalidate=59"
   );
-  const movieRes = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+
+  const movieRes1 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
   );
-  const data = await movieRes.json();
+  const movieRes2 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
+  );
+  const movieRes3 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
+  );
+  const movieRes4 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie4.json"
+  );
+  const data1 = await movieRes1.json();
+  const data2 = await movieRes2.json();
+  const data3 = await movieRes3.json();
+  const data4 = await movieRes4.json();
+
+  let allData = [];
+
+  const newAllData = allData.concat(data1, data2, data3, data4);
+
   // count how many pages
-  let totalMovieCount = pageCount(data.length);
-  const sortMovie = data
+  let totalMovieCount = pageCount(newAllData.length);
+  const sortMovie = newAllData
     .slice()
     .sort(
       (b, a) =>
@@ -145,6 +163,6 @@ export async function getServerSideProps({ req, res }) {
   let totalMovie = sortMovie.slice(0, show_per_page);
 
   return {
-    props: { movie: totalMovie, totalMovieCount },
+    props: { movie: totalMovie, totalMovieCount, all: newAllData },
   };
 }

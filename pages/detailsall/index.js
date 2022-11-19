@@ -60,6 +60,7 @@ function ModieDetails({ allmovies }) {
   const fetchmagnet = async () => {
     const id = movies.id;
     const data = await fetchMoviesDetailsMagnetlinks(id);
+    console.log("data", data);
     setMagnetLink(data);
   };
 
@@ -194,15 +195,14 @@ function ModieDetails({ allmovies }) {
             <link rel="icon" href="/favicon.ico" />
           </Head>
           <Header />
+
           <main className="mx-auto max-w-screen-lg">
             <div className="max-w-screen-xl mx-auto">
               <div className="">
                 <div className="flex items-center justify-center w-full mb-4">
                   {activeImage ? (
                     <Image
-                      className={
-                        "w-full rounded-lg cursor-pointer object-contain"
-                      }
+                      className="w-[50vw] h-[50vw] object-contain"
                       width={800}
                       height={800}
                       src={activeImage}
@@ -217,7 +217,7 @@ function ModieDetails({ allmovies }) {
                     />
                   ) : (
                     <Image
-                      className={"w-full rounded-lg cursor-pointer scale-50"}
+                      className="w-[50vw] h-[50vw] object-contain"
                       width={800}
                       height={800}
                       src={movies?.image}
@@ -465,16 +465,3 @@ function ModieDetails({ allmovies }) {
 }
 
 export default ModieDetails;
-export async function getStaticProps() {
-  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_ALL_MOVIE_URL);
-  const data = await movieRes.json();
-  const initialData = data
-    .slice()
-    .sort(
-      (b, a) =>
-        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
-    );
-  return {
-    props: { allmovies: initialData },
-  };
-}

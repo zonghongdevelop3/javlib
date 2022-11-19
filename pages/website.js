@@ -17,6 +17,8 @@ import dahlialogo from "../images/dahlia_logo.png";
 import fitchlogo from "../images/fitch_logo.png";
 
 function website() {
+  const tailwindStyle =
+    "relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg items-center justify-center";
   return (
     <div>
       <Head>
@@ -27,13 +29,12 @@ function website() {
       <Header />
       <main className="mx-auto max-w-screen">
         <div className="px-5 my-10 grid grid-flow-row-dense md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.s1s1s1.com/top/">
               <Image
                 src={s1logo}
                 height={300}
                 width={300}
-                objectFit="contain"
                 className={` cursor-pointer  transition duration-300 ease-in transform sm:hover:scale-125`}
                 placeholder="blur"
                 blurDataURL={
@@ -42,7 +43,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.ideapocket.com/top/">
               <Image
                 src={iplogo}
@@ -57,7 +58,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.madonna-av.com/top/">
               <Image
                 src={madonnalogo}
@@ -72,7 +73,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.attackers.net/top/">
               <Image
                 src={attackerslogo}
@@ -87,7 +88,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.premium-beauty.com/top/">
               <Image
                 src={premiumlogo}
@@ -102,7 +103,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.moodyz.com/top/">
               <Image
                 src={moodyzlogo}
@@ -117,7 +118,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.kawaiikawaii.jp/top/">
               <Image
                 src={kawaiilogo}
@@ -132,7 +133,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://faleno.jp/top/">
               <Image
                 src={falenologo}
@@ -147,7 +148,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.tameikegoro.jp/top/">
               <Image
                 src={tameikegoro}
@@ -162,7 +163,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://dahlia-av.jp/">
               <Image
                 src={dahlialogo}
@@ -177,7 +178,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.wanz-factory.com/top/">
               <Image
                 src={wanzlogo}
@@ -192,7 +193,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://www.dasdas.jp/top/">
               <Image
                 src={dasdlogo}
@@ -207,7 +208,7 @@ function website() {
               />
             </Link>
           </div>
-          <div className="relative flex flex-col m-5 bg-white z-30 p-10 shadow-lg">
+          <div className={`${tailwindStyle}`}>
             <Link href="https://fitch-av.com/top">
               <Image
                 src={fitchlogo}

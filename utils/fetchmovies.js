@@ -1,3 +1,4 @@
+import { movieIdrray } from "../config";
 export const fetchMovies = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/getmovies`);
   const data = await res.json();
@@ -10,7 +11,8 @@ export const fetchAllMovies = async () => {
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/getallmovies`
   );
   const data = await res.json();
-  const movies = data.movies;
+  console.log("data", data);
+  const movies = [];
   const totalMovieCount = data.totalMovieCount;
 
   return { movies, totalMovieCount };
@@ -100,31 +102,6 @@ export const fetchMoviesDetailsWithAllSuggest = async (id) => {
 };
 
 export const fetchMoviesDetailsMagnetlinks = async (id) => {
-  const movieIdrray = [
-    { id: "SSIS" },
-    { id: "SSNI" },
-    { id: "SNIS" },
-    { id: "IPX" },
-    { id: "IPZ" },
-    { id: "JUQ" },
-    { id: "JUL" },
-    { id: "URE" },
-    { id: "ROE" },
-    { id: "MIDV" },
-    { id: "MIDE" },
-    { id: "MIMK" },
-    { id: "MIAA" },
-    { id: "MIAE" },
-    { id: "FSDSS" },
-    { id: "DLDSS" },
-    { id: "STARS" },
-    { id: "CAWD" },
-    { id: "ADN" },
-    { id: "ATID" },
-    { id: "SAME" },
-    { id: "RBK" },
-  ];
-
   const filterMovieId = (id) => {
     let newid;
     if (id.length === 7) {
@@ -147,6 +124,7 @@ export const fetchMoviesDetailsMagnetlinks = async (id) => {
     }
   };
   const input = filterMovieId(id);
+  console.log("input", input);
   const moviesFilter = {
     mid: id.toString(),
     id: input[0]?.id?.toString(),

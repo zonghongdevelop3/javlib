@@ -460,12 +460,24 @@ function ModieDetails({ moviesData, totalMovieCount, totalMovies }) {
 
 export default ModieDetails;
 export async function getStaticPaths() {
-  const movieRes = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie.json"
+  const movieRes1 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
   );
-  const data = await movieRes.json();
+  const movieRes2 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
+  );
+  const movieRes3 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
+  );
+  const data1 = await movieRes1.json();
+  const data2 = await movieRes2.json();
+  const data3 = await movieRes3.json();
 
-  let totalMovieCount = pageCount(data.length);
+  let allData = [];
+
+  const newAllData = allData.concat(data1, data2, data3);
+
+  let totalMovieCount = pageCount(newAllData.length);
 
   // totalMovieCount number convert into a array
   let pageIntoArray = Array.from(Array(totalMovieCount).keys());
@@ -487,10 +499,24 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const value = params.filter;
 
-  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_ALL_MOVIE_URL);
-  const data = await movieRes.json();
+  const movieRes1 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
+  );
+  const movieRes2 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
+  );
+  const movieRes3 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
+  );
+  const data1 = await movieRes1.json();
+  const data2 = await movieRes2.json();
+  const data3 = await movieRes3.json();
 
-  const sortData = data
+  let allData = [];
+
+  const newAllData = allData.concat(data1, data2, data3);
+
+  const sortData = newAllData
     .slice()
     .sort(
       (b, a) =>

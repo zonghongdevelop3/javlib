@@ -4,24 +4,21 @@ export const getUniqueValues = (data, type) => {
     // let newActor = unique.split("/");
     // console.log("new actor", newActor);
     unique = unique.flat();
-    console.log(unique);
-    return ["all", ...new Set(unique)];
+    return [...new Set(unique)];
   }
   if (type === "studio") {
     let unique = data.map((item) => item[type]?.split("/"));
     // let newActor = unique.split("/");
     // console.log("new actor", newActor);
     unique = unique.flat();
-    console.log(unique);
-    return ["all", ...new Set(unique)];
+    return [, ...new Set(unique)];
   }
   if (type === "genre") {
     let unique = data.map((item) => item[type]?.split(" "));
     // let newActor = unique.split("/");
     // console.log("new actor", newActor);
     unique = unique.flat();
-    console.log(unique);
-    return ["all", ...new Set(unique)];
+    return [...new Set(unique)];
   }
 
   // if (type === "genre") {
@@ -53,7 +50,7 @@ export function filterAllData(data, value) {
   const excludeColumns = [];
   const Value = value.toLocaleUpperCase().trim();
 
-  if (Value === "") setSearchResults(dataList);
+  if (Value === "") setSearchResults([]);
   else {
     const filteredDatas = data?.filter((item) => {
       return Object?.keys(item)?.some((key) =>

@@ -7,14 +7,15 @@ import { addMovie, selectMovie } from "../../features/movieSlice";
 const SuggestList = dynamic(() => import("../../components/SuggestList"));
 const Header = dynamic(() => import("../../components/Header"));
 
-import { getUniqueValues } from "../../utils/helpers";
+import { getUniqueValues, pageCount } from "../../utils/helpers";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import Fade from "react-reveal/Fade";
 import Pagination from "../../components/Pagination";
+import PaginationActor from "../../components/PaginationActor";
 
-function Index() {
+function Index({ all_movie }) {
   const dispatch = useDispatch();
-  const all_movie = useSelector(selectMovie);
+  // const all_movie = useSelector(selectMovie);
 
   const dataList = all_movie;
   const excludeColumns = [];
@@ -33,8 +34,6 @@ function Index() {
   const name = all_movie ? getUniqueValues(all_movie, "actor") : null;
   const keywords = all_movie ? getUniqueValues(all_movie, "genre") : null;
 
-  console.log("name", name);
-
   const [currentpage, setCurrentPage] = useState(1);
   const [postsPerPage] = useState(12);
   // get current poster
@@ -46,8 +45,18 @@ function Index() {
     indexOfLastPost
   );
 
+  const [currentactor, setCurrentActor] = useState(1);
+  const [postsPerActor] = useState(50);
+  // get current poster
+  const indexOfLastPostActor = currentactor * postsPerActor;
+  const indexOfFirstPostActor = indexOfLastPostActor - postsPerActor;
+  const currentActor = name?.slice(indexOfFirstPostActor, indexOfLastPostActor);
+
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+  const paginateActor = (pageNumber) => {
+    setCurrentActor(pageNumber);
   };
 
   const filterData = (value, item) => {
@@ -131,6 +140,47 @@ function Index() {
                         </button>
                       </div>
                     )}
+
+                    <div className="flex flex-col p-4 items-center space-y-2">
+                      <div className="flex items-center">
+                        <h2 className="p-4 text-center text-base md:text-lg font-medium">
+                          女优
+                        </h2>
+                        {showName ? (
+                          <AiOutlineUp
+                            onClick={() => setShowName(false)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                        ) : (
+                          <AiOutlineDown
+                            onClick={() => setShowName(true)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                        )}
+                      </div>
+                      {showName && (
+                        <div className=" space-y-4  w-full">
+                          {currentActor?.map((value) => (
+                            <div
+                              className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
+                      ${
+                        value == activeName &&
+                        "bg-gray-500 text-white font-bold"
+                      }`}
+                              onClick={() => filterData(value, "actor")}
+                              key={value}
+                            >
+                              <Fade bottom>{value}</Fade>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <PaginationActor
+                        postsPerActor={postsPerActor}
+                        totalActor={name?.length}
+                        paginate={paginateActor}
+                      />
+                    </div>
                     <div className="flex flex-col p-4 items-center space-y-2 ">
                       <div className="flex items-center">
                         <h2 className="p-4 text-center text-base md:text-lg font-medium">
@@ -158,41 +208,6 @@ function Index() {
                         "bg-gray-500 text-white font-bold"
                       }`}
                               onClick={() => filterData(value, "studio")}
-                              key={value}
-                            >
-                              <Fade bottom>{value}</Fade>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col p-4 items-center space-y-2">
-                      <div className="flex items-center">
-                        <h2 className="p-4 text-center text-base md:text-lg font-medium">
-                          女优
-                        </h2>
-                        {showName ? (
-                          <AiOutlineUp
-                            onClick={() => setShowName(false)}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                        ) : (
-                          <AiOutlineDown
-                            onClick={() => setShowName(true)}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                        )}
-                      </div>
-                      {showName && (
-                        <div className=" space-y-4  w-full">
-                          {name?.map((value) => (
-                            <div
-                              className={`flex items-center justify-center p-2  rounded-2xl w-full cursor-pointer
-                      ${
-                        value == activeName &&
-                        "bg-gray-500 text-white font-bold"
-                      }`}
-                              onClick={() => filterData(value, "actor")}
                               key={value}
                             >
                               <Fade bottom>{value}</Fade>
@@ -250,13 +265,7 @@ function Index() {
               paginate={paginate}
             />
           )}
-          {filter && (
-            <Pagination
-              postsPerPage={postsPerPage}
-              totalPosts={searchResults?.length}
-              paginate={paginate}
-            />
-          )}
+
           {filter && <p>{searchResults.length} Movie</p>}
 
           <div className="grid grid-flow-row-dense md:grid-cols-2 lg:grid-cols-3">
@@ -301,6 +310,13 @@ function Index() {
                 />
               ))}
           </div>
+          {filter && (
+            <Pagination
+              postsPerPage={postsPerPage}
+              totalPosts={searchResults?.length}
+              paginate={paginate}
+            />
+          )}
         </div>
       </main>
     </div>
@@ -314,7 +330,42 @@ export async function getServerSideProps({ req, res }) {
     "public, s-maxage=10, stale-while-revalidate=59"
   );
 
+  const movieRes1 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json",
+    { cache: "no-store" }
+  );
+  const movieRes2 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json",
+    { cache: "no-store" }
+  );
+  const movieRes3 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json",
+    { cache: "no-store" }
+  );
+  const movieRes4 = await fetch(
+    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json",
+    { cache: "no-store" }
+  );
+  const data1 = await movieRes1.json();
+  const data2 = await movieRes2.json();
+  const data3 = await movieRes3.json();
+  const data4 = await movieRes4.json();
+
+  let allData = [];
+
+  const newAllData = allData.concat(data1, data2, data3, data4);
+
+  // count how many pages
+  let totalMovieCount = pageCount(newAllData.length);
+  const sortMovie = newAllData
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  let totalMovie = sortMovie.slice(0, 12);
+
   return {
-    props: {},
+    props: { movie: totalMovie, totalMovieCount, all_movie: sortMovie },
   };
 }
