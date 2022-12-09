@@ -48,7 +48,7 @@ function Header() {
   // get current poster
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentMovie = dataList?.slice(indexOfFirstPost, indexOfLastPost);
+
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };

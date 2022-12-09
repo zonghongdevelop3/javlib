@@ -56,3 +56,14 @@ export const movieIdrray = [
   { id: "DASS" },
   { id: "HNDS" },
 ];
+
+export const url =
+  "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/movie.json";
+export const allurl1 =
+  "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json";
+export const allurl2 =
+  "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json";
+export const allurl3 =
+  "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json";
+export const allurl4 =
+  "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie4.json";

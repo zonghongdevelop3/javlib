@@ -1,9 +1,33 @@
-import { movieIdrray } from "../config";
-export const fetchMovies = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/getmovies`);
-  const data = await res.json();
-  const movies = data.movies;
+import {
+  movieIdrray,
+  show_per_page,
+  url,
+  allurl1,
+  allurl2,
+  allurl3,
+  allurl4,
+} from "../config";
+import { pageCount } from "./helpers";
+
+export const fetchBaseMovie = async () => {
+  const res = await fetch(url);
+  const movies = res.json();
   return movies;
+};
+
+export const fetchMovies = async () => {
+  const moviesData = await fetchBaseMovie();
+  let sortingMovies;
+  sortingMovies = moviesData
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  const movies = sortingMovies.slice(0, show_per_page);
+  const totalMovieCount = pageCount(moviesData.length);
+
+  return { movies: movies, totalMovieCount: totalMovieCount };
 };
 
 export const fetchAllMovies = async () => {
@@ -11,25 +35,35 @@ export const fetchAllMovies = async () => {
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/getallmovies`
   );
   const data = await res.json();
-  console.log("data", data);
-  const movies = [];
+  // console.log("data", data);
+  const movies = data;
   const totalMovieCount = data.totalMovieCount;
 
   return { movies, totalMovieCount };
 };
+
 export const fetchAllMoviesPaginate = async (page) => {
   const moviesFilter = {
     page: page,
   };
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/getallmoviespaginate`,
-    { body: JSON.stringify(moviesFilter), method: "POST" }
-  );
-  const data = await res.json();
-  const movies = data.movies;
-  const totalMovieCount = data.totalMovieCount;
+  const moviesData = await fetchAllMovies();
+  const newAllData = moviesData.movies.movies;
+  const totalMovieCount = pageCount(newAllData.length);
+  let totalMovie;
+  if (Number(page) == 1) {
+    totalMovie = newAllData.slice(show_per_page, show_per_page);
+  }
+  if (Number(page) == 2) {
+    totalMovie = newAllData.slice(show_per_page, show_per_page * page);
+  }
+  if (Number(page) > 2) {
+    totalMovie = newAllData.slice(
+      show_per_page * page - show_per_page,
+      show_per_page * page
+    );
+  }
 
-  return { movies, totalMovieCount };
+  return { movies: newAllData, totalMovieCount };
 };
 
 export const fetchSearchMovies = async (filter) => {

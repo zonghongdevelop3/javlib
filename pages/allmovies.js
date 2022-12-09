@@ -1,22 +1,21 @@
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 const Header = dynamic(() => import("../components/Header"));
 const Result = dynamic(() => import("../components/Result"));
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addMovie } from "../features/movieSlice";
 import { resetGrid } from "../features/gridSlice";
 import Reveal from "react-reveal/Reveal";
 import SortingHeader from "../components/SortingHeader";
 import { pageCount } from "../utils/helpers";
 import PaginationNew from "../components/PaginationNew";
-import { useRouter } from "next/router";
 import { show_per_page } from "../config";
+import { fetchAllMovies } from "../utils/fetchmovies";
 
 export default function Allmovie({ movie, totalMovieCount, all }) {
-  console.log("all", all);
-  const router = useRouter();
   const movies = movie;
+  console.log(movies, totalMovieCount);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [currentpage, setCurrentPage] = useState(1);
@@ -92,15 +91,20 @@ export default function Allmovie({ movie, totalMovieCount, all }) {
     }
   }, [movies, sortingCriteria]);
 
-  const indexOfLastPost = currentpage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentMovie = sortingMovie?.slice(indexOfFirstPost, indexOfLastPost);
+  // const indexOfLastPost = currentpage * postsPerPage;
+  // const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  // const currentMovie = sortingMovie?.slice(indexOfFirstPost, indexOfLastPost);
 
   useEffect(() => {
     dispatch(resetGrid());
     dispatch(addMovie(movies));
     setLoading(false);
   }, [movies]);
+
+  const getdata = async () => {
+    const movieData = await fetchAllMovies();
+    console.log(movieData.movies);
+  };
 
   return (
     <div className="">
@@ -116,7 +120,7 @@ export default function Allmovie({ movie, totalMovieCount, all }) {
           {loading ? (
             <p>Loading...</p>
           ) : (
-            <Result collections={movie} allDataisTrue />
+            <Result collections={sortingMovie} allDataisTrue />
           )}
         </Reveal>
         <PaginationNew totalMovieCount={totalMovieCount} />
@@ -130,38 +134,23 @@ export async function getServerSideProps({ req, res }) {
     "public, s-maxage=10, stale-while-revalidate=59"
   );
 
-  const movieRes1 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
-  );
-  const movieRes2 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
-  );
-  const movieRes3 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
-  );
-  const movieRes4 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie4.json"
-  );
-  const data1 = await movieRes1.json();
-  const data2 = await movieRes2.json();
-  const data3 = await movieRes3.json();
-  const data4 = await movieRes4.json();
-
-  let allData = [];
-
-  const newAllData = allData.concat(data1, data2, data3, data4);
+  const moviesData = await fetchAllMovies();
+  const movies = moviesData.movies;
 
   // count how many pages
-  let totalMovieCount = pageCount(newAllData.length);
-  const sortMovie = newAllData
-    .slice()
-    .sort(
-      (b, a) =>
-        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
-    );
-  let totalMovie = sortMovie.slice(0, show_per_page);
+  let totalMovieCount = pageCount(movies.length);
+  // const sortMovie = movies
+  //   .slice()
+  //   .sort(
+  //     (b, a) =>
+  //       new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+  //   );
+  // let totalMovie = sortMovie.slice(0, show_per_page);
 
   return {
-    props: { movie: totalMovie, totalMovieCount, all: newAllData },
+    props: {
+      movie: moviesData.movies.movies,
+      totalMovieCount: moviesData.totalMovieCount,
+    },
   };
 }

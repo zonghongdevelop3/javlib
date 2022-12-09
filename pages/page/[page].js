@@ -12,9 +12,21 @@ import { show_per_page } from "../../config";
 import SortingHeader from "../../components/SortingHeader";
 import { pageCount } from "../../utils/helpers";
 import PaginationNew from "../../components/PaginationNew";
+import {
+  fetchAllMovies,
+  fetchAllMoviesPaginate,
+} from "../../utils/fetchmovies";
 
-export default function Home({ moviesData, totalMovieCount, currentPostpage }) {
-  const movies = JSON.parse(moviesData);
+export default function Home({
+  moviesData,
+  totalMovieCount,
+  currentPostpage,
+  totalMovie,
+  newsortMovie,
+}) {
+  console.log(totalMovie);
+  // const movies = JSON.parse(moviesData);
+  const movies = moviesData;
 
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
@@ -100,6 +112,11 @@ export default function Home({ moviesData, totalMovieCount, currentPostpage }) {
     setLoading(false);
   }, [movies]);
 
+  const getpagedata = async () => {
+    const data = await fetchAllMoviesPaginate(currentPostpage);
+    console.log(data);
+  };
+
   return (
     <div className="">
       <Head>
@@ -109,6 +126,7 @@ export default function Home({ moviesData, totalMovieCount, currentPostpage }) {
       </Head>
       <Header collections={movies} />
       <SortingHeader setSortingCriteria={setSortingCriteria} />
+      <button onClick={getpagedata}>getpagedata</button>
 
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
@@ -165,22 +183,11 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const movieRes1 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
-  );
-  const movieRes2 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
-  );
-  const movieRes3 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
-  );
-  const data1 = await movieRes1.json();
-  const data2 = await movieRes2.json();
-  const data3 = await movieRes3.json();
+  const moviesData = await fetchAllMovies();
 
   let allData = [];
 
-  const newAllData = allData.concat(data1, data2, data3);
+  const newAllData = moviesData.movies.movies;
   const sortMovie = newAllData
     .slice()
     .sort(
@@ -188,9 +195,7 @@ export async function getStaticProps({ params }) {
         new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
     );
 
-  let totalMovieCount = pageCount(newAllData.length);
-
-  // main Logic for dynamic pagination get post base on show_per_page in you app.
+  let totalMovieCount = pageCount(moviesData.totalMovieCount);
 
   let totalMovie;
 
@@ -210,9 +215,11 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      moviesData: JSON.stringify(totalMovie),
-      totalMovieCount,
+      moviesData: moviesData.movies.movies,
+      totalMovieCount: newAllData.length,
       currentPostpage: params.page,
+      totalMovie: sortMovie.slice(show_per_page, show_per_page * params.page),
+      newsortMovie: sortMovie,
     },
     revalidate: 60,
   };

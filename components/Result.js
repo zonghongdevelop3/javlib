@@ -25,7 +25,7 @@ function Result({ collections, allDataisTrue }) {
          
       `}
     >
-      {collections.map((collection) => (
+      {collections?.map((collection) => (
         <ResultList
           key={collection.id}
           id={collection?.id}
