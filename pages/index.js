@@ -117,11 +117,6 @@ export default function Home({ movies, totalMovieCount }) {
         <Reveal effect="fadeInUp">
           {loading ? <p>Loading...</p> : <Result collections={currentMovie} />}
         </Reveal>
-        <Pagination
-          postsPerPage={postsPerPage}
-          totalPosts={movies?.length}
-          paginate={paginate}
-        />
         <PaginationNew totalMovieCount={totalMovieCount} initial />
       </main>
     </div>

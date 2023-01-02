@@ -476,7 +476,7 @@ export async function getStaticPaths() {
   let pageIntoArray = Array.from(Array(totalMovieCount).keys());
   let paths = [];
 
-  pageIntoArray.map((path) =>
+  pageIntoArray.splice(0, 30).map((path) =>
     paths.push({
       params: { id: `${path}` },
     })

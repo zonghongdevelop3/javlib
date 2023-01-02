@@ -495,7 +495,7 @@ export async function getStaticPaths() {
 
   let paths = [];
 
-  pageIntoArray.map((path) =>
+  pageIntoArray.splice(0, 30).map((path) =>
     paths.push({
       params: { filter: `${path}`, page: `${path + 1}` },
     })

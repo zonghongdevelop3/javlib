@@ -132,11 +132,7 @@ export default function MoviePage({
 
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            <Result collections={currentMovie} allDataisTrue />
-          )}
+          {loading ? <p>Loading...</p> : <Result collections={currentMovie} />}
         </Reveal>
 
         <PaginationNew
@@ -157,7 +153,7 @@ export async function getStaticPaths() {
 
   let paths = [];
 
-  pageIntoArray.splice(0, 100).map((path) =>
+  pageIntoArray.splice(0, 30).map((path) =>
     paths.push({
       params: { page: `${path + 1}` },
     })
