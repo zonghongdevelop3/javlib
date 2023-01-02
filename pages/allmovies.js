@@ -8,18 +8,13 @@ import { addMovie } from "../features/movieSlice";
 import { resetGrid } from "../features/gridSlice";
 import Reveal from "react-reveal/Reveal";
 import SortingHeader from "../components/SortingHeader";
-import { pageCount } from "../utils/helpers";
 import PaginationNew from "../components/PaginationNew";
-import { show_per_page } from "../config";
 import { fetchAllMovies } from "../utils/fetchmovies";
 
-export default function Allmovie({ movie, totalMovieCount, all }) {
+export default function Allmovie({ movie, totalMovieCount }) {
   const movies = movie;
-  console.log(movies, totalMovieCount);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-  const [currentpage, setCurrentPage] = useState(1);
-  const [postsPerPage] = useState(12);
   const [sortingCriteria, setSortingCriteria] = useState("releasedateDsc");
 
   const [sortingMovie, setSortingMovie] = useState(
@@ -101,11 +96,6 @@ export default function Allmovie({ movie, totalMovieCount, all }) {
     setLoading(false);
   }, [movies]);
 
-  const getdata = async () => {
-    const movieData = await fetchAllMovies();
-    console.log(movieData.movies);
-  };
-
   return (
     <div className="">
       <Head>
@@ -135,22 +125,13 @@ export async function getServerSideProps({ req, res }) {
   );
 
   const moviesData = await fetchAllMovies();
-  const movies = moviesData.movies;
-
-  // count how many pages
-  let totalMovieCount = pageCount(movies.length);
-  // const sortMovie = movies
-  //   .slice()
-  //   .sort(
-  //     (b, a) =>
-  //       new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
-  //   );
-  // let totalMovie = sortMovie.slice(0, show_per_page);
+  const movies = moviesData.allmovies;
+  const totalMovieCount = moviesData.totalMovieCount;
 
   return {
     props: {
-      movie: moviesData.movies.movies,
-      totalMovieCount: moviesData.totalMovieCount,
+      movie: movies,
+      totalMovieCount: totalMovieCount,
     },
   };
 }

@@ -134,9 +134,6 @@ export async function getServerSideProps({ req, res }) {
   const data = await fetchMovies();
   const movies = data.movies;
 
-  // count how many pages
-  // let totalMovie = movies.slice(0, 12);
-
   return {
     props: { movies: movies },
   };

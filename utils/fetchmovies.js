@@ -15,6 +15,20 @@ export const fetchBaseMovie = async () => {
   return movies;
 };
 
+export const fetchAllBaseMovie = async () => {
+  const res1 = await fetch(allurl1);
+  const res2 = await fetch(allurl2);
+  const res3 = await fetch(allurl3);
+  const res4 = await fetch(allurl4);
+  const movies1 = await res1.json();
+  const movies2 = await res2.json();
+  const movies3 = await res3.json();
+  const movies4 = await res4.json();
+  let allData = [];
+  const allmovies = allData.concat(movies1, movies2, movies3, movies4);
+  return allmovies;
+};
+
 export const fetchMovies = async () => {
   const moviesData = await fetchBaseMovie();
   let sortingMovies;
@@ -31,15 +45,19 @@ export const fetchMovies = async () => {
 };
 
 export const fetchAllMovies = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/getallmovies`
-  );
-  const data = await res.json();
-  // console.log("data", data);
-  const movies = data;
-  const totalMovieCount = data.totalMovieCount;
+  const allmovieData = await fetchAllBaseMovie();
 
-  return { movies, totalMovieCount };
+  let sortingMovies;
+  sortingMovies = allmovieData
+    ?.slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  const allmovies = sortingMovies.slice(0, show_per_page);
+  const totalMovieCount = pageCount(allmovieData.length);
+
+  return { allmovies: allmovies, totalMovieCount: totalMovieCount };
 };
 
 export const fetchAllMoviesPaginate = async (page) => {
