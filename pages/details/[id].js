@@ -500,9 +500,9 @@ export async function getStaticProps({ params }) {
 
   const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_MOVIE_URL);
   const data = await movieRes.json();
-  const movieDetailsRes = await fetchMoviesDetailsWithSuggest(id);
-  const movieDetail = movieDetailsRes.movies;
-  const suggest = movieDetailsRes.suggest;
+  //const movieDetailsRes = await fetchMoviesDetailsWithSuggest(id);
+  //const movieDetail = movieDetailsRes.movies;
+  //const suggest = movieDetailsRes.suggest;
 
   const initialData = data
     .slice()
@@ -511,6 +511,6 @@ export async function getStaticProps({ params }) {
         new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
     );
   return {
-    props: { all: initialData, movieDetail: movieDetail, suggest },
+    props: { all: initialData, movieDetail: null, suggest: null },
   };
 }
