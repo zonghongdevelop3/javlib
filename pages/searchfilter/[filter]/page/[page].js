@@ -3,7 +3,7 @@ import { filterAllData, pageCount } from "../../../../utils/helpers";
 import Head from "next/head";
 import HeaderItems from "../../../../components/HeaderItems";
 import ResultList from "../../../../components/ResultList";
-import PaginationNew from "../../../../components/PaginationNew";
+import Link from "next/link";
 
 import {
   AdjustmentsIcon,
@@ -18,6 +18,7 @@ import {
 } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
 import { show_per_page } from "../../../../config";
+import { fetchAllBaseMovie } from "../../../../utils/fetchmovies";
 
 export default function Index({
   params,
@@ -25,9 +26,11 @@ export default function Index({
   totalMovieCount,
   totalMoviesResult,
 }) {
-  const movies = JSON.parse(moviesData);
+  const movies = moviesData;
   const router = useRouter();
   const currentParam = router.query.filter;
+  const currentPostpage = router.query.page;
+  console.log(router.query.page);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState(moviesData);
@@ -73,6 +76,7 @@ export default function Index({
     e.preventDefault();
     router.push(`/searchfilter/${searchTerm}`);
   };
+  let pageIntoArray = Array?.from(Array(totalMovieCount).keys());
 
   return (
     <div>
@@ -184,45 +188,46 @@ export default function Index({
             </h1>
           </div>
         )}
-        <PaginationNew
-          totalMovieCount={totalMovieCount}
-          search
-          currentParam={currentParam}
-        />
+        <nav className="w-full overflow-hidden pb-2">
+          <ul className="overflow-x-scroll flex flex-row items-center justify-items-center space-x-8 mx-8">
+            {pageIntoArray.map((page) => {
+              return (
+                <li
+                  key={page}
+                  className={`page-item p-2 mb-4 ${
+                    Number(currentPostpage) == Number(page + 1) &&
+                    "bg-gray-500 rounded-full leading-loose"
+                  }`}
+                >
+                  <Link
+                    href={
+                      page === 0
+                        ? `/searchfilter/${currentParam}`
+                        : `/searchfilter/${currentParam}/page/${page + 1}`
+                    }
+                  >
+                    <p>{page + 1}</p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </main>
     </div>
   );
 }
 
 export async function getStaticPaths() {
-  const movieRes1 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
-  );
-  const movieRes2 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
-  );
-  const movieRes3 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
-  );
-  const movieRes4 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie4.json"
-  );
-  const data1 = await movieRes1.json();
-  const data2 = await movieRes2.json();
-  const data3 = await movieRes3.json();
-  const data4 = await movieRes4.json();
-
-  let allData = [];
-
-  const newAllData = allData.concat(data1, data2, data3, data4);
-  let totalMovieCount = pageCount(newAllData.length);
+  const allmovieData = await fetchAllBaseMovie();
+  let totalMovieCount = pageCount(allmovieData?.length);
 
   // totalMovieCount number convert into a array
   let pageIntoArray = Array.from(Array(totalMovieCount).keys());
 
   let paths = [];
 
-  pageIntoArray.map((path) =>
+  pageIntoArray.splice(0, 100).map((path) =>
     paths.push({
       params: { page: `${path + 1}`, filter: `${path}` },
     })
@@ -235,28 +240,9 @@ export async function getStaticPaths() {
 }
 export async function getStaticProps({ params }) {
   const value = params.filter;
+  const allmovieData = await fetchAllBaseMovie();
 
-  const movieRes1 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
-  );
-  const movieRes2 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
-  );
-  const movieRes3 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
-  );
-  const movieRes4 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie4.json"
-  );
-  const data1 = await movieRes1.json();
-  const data2 = await movieRes2.json();
-  const data3 = await movieRes3.json();
-  const data4 = await movieRes4.json();
-
-  let allData = [];
-
-  const newAllData = allData.concat(data1, data2, data3, data4);
-  const sortData = newAllData
+  const sortData = allmovieData
     .slice()
     .sort(
       (b, a) =>
@@ -284,7 +270,7 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      moviesData: JSON.stringify(totalMovie),
+      moviesData: totalMovie,
       totalMovieCount,
       totalMoviesResult,
       params: params,

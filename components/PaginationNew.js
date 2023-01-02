@@ -5,6 +5,7 @@ import Link from "next/link";
 function PaginationNew({
   totalMovieCount,
   search,
+  initial,
   currentParam,
   currentPostpage,
 }) {
@@ -22,6 +23,16 @@ function PaginationNew({
                 "bg-gray-500 rounded-full leading-loose"
               }`}
             >
+              {initial ? (
+                <Link href={page === 0 ? "/" : `/basepage/${page + 1}`}>
+                  <p>{page + 1}</p>
+                </Link>
+              ) : (
+                <Link href={page === 0 ? "/allmovies/" : `/page/${page + 1}`}>
+                  <p>{page + 1}</p>
+                </Link>
+              )}
+
               {search ? (
                 <Link
                   href={
@@ -32,11 +43,7 @@ function PaginationNew({
                 >
                   <p>{page + 1}</p>
                 </Link>
-              ) : (
-                <Link href={page === 0 ? "/allmovies/" : `/page/${page + 1}`}>
-                  <p>{page + 1}</p>
-                </Link>
-              )}
+              ) : null}
             </li>
           );
         })}

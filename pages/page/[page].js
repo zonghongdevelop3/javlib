@@ -18,7 +18,7 @@ import {
   fetchAllMoviesPaginate,
 } from "../../utils/fetchmovies";
 
-export default function Home({
+export default function AllMoviePage({
   moviesData,
   totalMovieCount,
   currentPostpage,
@@ -127,8 +127,6 @@ export default function Home({
       </Head>
       <Header collections={movies} />
       <SortingHeader setSortingCriteria={setSortingCriteria} />
-      <button onClick={getpagedata}>getpagedata</button>
-
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
           {loading ? (

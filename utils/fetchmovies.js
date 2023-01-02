@@ -60,6 +60,34 @@ export const fetchAllMovies = async () => {
   return { allmovies: allmovies, totalMovieCount: totalMovieCount };
 };
 
+export const fetchMoviesPaginate = async (page) => {
+  const moviesData = await fetchBaseMovie();
+  const newAllData = moviesData
+    ?.slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  const totalMovieCount = pageCount(moviesData.length);
+
+  let totalMovie;
+
+  if (Number(page) == 1) {
+    totalMovie = newAllData.slice(show_per_page, show_per_page);
+  }
+  if (Number(page) == 2) {
+    totalMovie = newAllData.slice(show_per_page, show_per_page * page);
+  }
+  if (Number(page) > 2) {
+    totalMovie = newAllData.slice(
+      show_per_page * page - show_per_page,
+      show_per_page * page
+    );
+  }
+
+  return { movies: totalMovie, totalMovieCount: totalMovieCount };
+};
+
 export const fetchAllMoviesPaginate = async (page) => {
   const moviesData = await fetchAllBaseMovie();
   const newAllData = moviesData
@@ -89,19 +117,23 @@ export const fetchAllMoviesPaginate = async (page) => {
 };
 
 export const fetchSearchMovies = async (filter) => {
-  const moviesFilter = {
-    searchterm: filter,
-  };
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/getallmovieswithfilter`,
-    { body: JSON.stringify(moviesFilter), method: "POST" }
-  );
-  const data = await res.json();
-  const movies = data.movies;
-  const totalMovieCount = data.totalMovieCount;
-  const totalMoviesResult = data.totalMoviesResult;
-
-  return { movies, totalMovieCount, totalMoviesResult };
+  const excludeColumns = [];
+  const Value = filter.toLocaleUpperCase().trim();
+  const moviesData = await fetchBaseMovie();
+  const sortData = moviesData
+    ?.slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  const filteredData = sortData?.filter((item) => {
+    return Object?.keys(item)?.some((key) =>
+      excludeColumns.includes(key)
+        ? false
+        : item[key]?.toString().toLocaleUpperCase().includes(Value)
+    );
+  });
+  return { filteredData };
 };
 
 export const fetchSearchMoviesPaginate = async (filter, page) => {
@@ -124,22 +156,41 @@ export const fetchSearchMoviesPaginate = async (filter, page) => {
 };
 
 export const fetchMoviesDetailsWithSuggest = async (id) => {
-  const moviesFilter = {
-    id: id,
+  const excludeColumns = [];
+  const Value = id.toLocaleUpperCase().trim();
+
+  const moviesData = await fetchBaseMovie();
+  const sortData = moviesData
+    ?.slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+
+  const filteredData = sortData?.filter((item) => {
+    return Object?.keys(item)?.some((key) =>
+      excludeColumns.includes(key)
+        ? false
+        : item["id"]?.toString().toLocaleUpperCase().includes(Value)
+    );
+  });
+  const suggestInput = filteredData[0]?.actor.toLocaleUpperCase().trim();
+
+  const suggestMovie = sortData?.filter((item) => {
+    return Object?.keys(item)?.some((key) =>
+      excludeColumns.includes(key)
+        ? false
+        : item[key]?.toString().toLocaleUpperCase().includes(suggestInput)
+    );
+  });
+
+  return {
+    movieDetail: filteredData[0],
+    suggest: suggestMovie,
   };
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/getmoviesdetailwithsuggest`,
-    { body: JSON.stringify(moviesFilter), method: "POST" }
-  );
-  const data = await res.json();
-
-  const movies = data.movies;
-
-  const suggest = data.suggest;
-
-  return { movies, suggest };
 };
 
+//
 export const fetchMoviesDetailsWithAllSuggest = async (id) => {
   const moviesFilter = {
     id: id,

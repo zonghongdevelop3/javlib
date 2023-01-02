@@ -1,29 +1,44 @@
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-// redux
-import { useDispatch } from "react-redux";
-import { addMovie } from "../features/movieSlice";
-import { resetGrid } from "../features/gridSlice";
+import { useEffect, useState, useRef } from "react";
+const Header = dynamic(() => import("../../components/Header"));
+const Result = dynamic(() => import("../../components/Result"));
+import { useDispatch, useSelector } from "react-redux";
+import { addMovie } from "../../features/movieSlice";
+import { resetGrid } from "../../features/gridSlice";
 import Reveal from "react-reveal/Reveal";
-// import movies from "../data/movie.json";
-const Header = dynamic(() => import("../components/Header"));
-const Result = dynamic(() => import("../components/Result"));
-const Pagination = dynamic(() => import("../components/Pagination"));
-const PaginationNew = dynamic(() => import("../components/PaginationNew"));
-const SortingHeader = dynamic(() => import("../components/SortingHeader"));
-// utils
-import { fetchMovies } from "../utils/fetchmovies";
+import { show_per_page } from "../../config";
 
-export default function Home({ movies, totalMovieCount }) {
+import SortingHeader from "../../components/SortingHeader";
+import { pageCount } from "../../utils/helpers";
+import PaginationNew from "../../components/PaginationNew";
+import {
+  fetchAllBaseMovie,
+  fetchAllMovies,
+  fetchAllMoviesPaginate,
+  fetchBaseMovie,
+  fetchMoviesPaginate,
+} from "../../utils/fetchmovies";
+
+export default function MoviePage({
+  moviesData,
+  totalMovieCount,
+  currentPostpage,
+  totalMovie,
+  newsortMovie,
+  params,
+}) {
+  // const movies = JSON.parse(moviesData);
+  const movies = moviesData;
+
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [currentpage, setCurrentPage] = useState(1);
-  const [postsPerPage] = useState(20);
+  const [postsPerPage] = useState(40);
   const [sortingCriteria, setSortingCriteria] = useState("releasedateDsc");
   const [sortingMovie, setSortingMovie] = useState(
     movies
-      .slice()
+      ?.slice()
       .sort(
         (b, a) =>
           new Date(a?.releasedate).getTime() -
@@ -34,7 +49,7 @@ export default function Home({ movies, totalMovieCount }) {
   useEffect(() => {
     if (sortingCriteria === "releasedateDsc") {
       let newMovie = movies
-        .slice()
+        ?.slice()
         .sort(
           (b, a) =>
             new Date(a?.releasedate).getTime() -
@@ -44,7 +59,7 @@ export default function Home({ movies, totalMovieCount }) {
     }
     if (sortingCriteria === "releasedateAsc") {
       let newMovie = movies
-        .slice()
+        ?.slice()
         .sort(
           (b, a) =>
             new Date(b?.releasedate).getTime() -
@@ -53,37 +68,37 @@ export default function Home({ movies, totalMovieCount }) {
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "idAsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return a.id.localeCompare(b.id);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "idDsc") {
-      let newMovie = movies.slice().sort(function (b, a) {
+      let newMovie = movies?.slice().sort(function (b, a) {
         return a.id.localeCompare(b.id);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "titleAsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return a.actor.localeCompare(b.actor);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "titleDsc") {
-      let newMovie = movies.slice().sort(function (b, a) {
+      let newMovie = movies?.slice().sort(function (b, a) {
         return a.actor.localeCompare(b.actor);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "ratingDsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return Number(b.rating) - Number(a.rating);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "ratingAsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return Number(a.rating) - Number(b.rating);
       });
       setSortingMovie(newMovie);
@@ -93,15 +108,17 @@ export default function Home({ movies, totalMovieCount }) {
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentMovie = sortingMovie?.slice(indexOfFirstPost, indexOfLastPost);
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
 
   useEffect(() => {
     dispatch(resetGrid());
     dispatch(addMovie(movies));
     setLoading(false);
   }, [movies]);
+
+  const getpagedata = async () => {
+    const data = await fetchAllMoviesPaginate(currentPostpage);
+    console.log(data);
+  };
 
   return (
     <div className="">
@@ -115,29 +132,54 @@ export default function Home({ movies, totalMovieCount }) {
 
       <main className="mx-auto max-w-screen">
         <Reveal effect="fadeInUp">
-          {loading ? <p>Loading...</p> : <Result collections={currentMovie} />}
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <Result collections={currentMovie} allDataisTrue />
+          )}
         </Reveal>
-        <Pagination
-          postsPerPage={postsPerPage}
-          totalPosts={movies?.length}
-          paginate={paginate}
+
+        <PaginationNew
+          totalMovieCount={totalMovieCount}
+          currentPostpage={currentPostpage}
+          initial
         />
-        <PaginationNew totalMovieCount={totalMovieCount} initial />
       </main>
     </div>
   );
 }
-export async function getServerSideProps({ req, res }) {
-  res.setHeader(
-    "Cache-Control",
-    "public, s-maxage=10, stale-while-revalidate=59"
+export async function getStaticPaths() {
+  const allmovieData = await fetchBaseMovie();
+  let totalMovieCount = pageCount(allmovieData?.length);
+
+  // totalMovieCount number convert into a array
+  let pageIntoArray = Array.from(Array(totalMovieCount).keys());
+
+  let paths = [];
+
+  pageIntoArray.splice(0, 100).map((path) =>
+    paths.push({
+      params: { page: `${path + 1}` },
+    })
   );
 
-  const data = await fetchMovies();
-  const movies = data.movies;
-  const totalMovieCount = data.totalMovieCount;
+  return {
+    paths,
+    fallback: "blocking",
+  };
+}
+
+export async function getStaticProps({ params }) {
+  const moviesData = await fetchMoviesPaginate(params.page);
+  const newAllData = moviesData.movies;
+  const totalMovieCount = moviesData.totalMovieCount;
 
   return {
-    props: { movies: movies, totalMovieCount: totalMovieCount },
+    props: {
+      moviesData: newAllData,
+      currentPostpage: params.page,
+      totalMovieCount,
+    },
+    revalidate: 60,
   };
 }

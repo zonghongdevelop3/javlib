@@ -16,6 +16,7 @@ import {
 import { EyeIcon } from "@heroicons/react/outline";
 import Pagination from "../../components/Pagination";
 import {
+  fetchSearchMovies,
   fetchMoviesDetailsWithSuggest,
   fetchMoviesDetailsMagnetlinks,
 } from "../../utils/fetchmovies";
@@ -25,15 +26,13 @@ function ModieDetails({ all, suggest, movieDetail }) {
   const movieDBURL = "https://www.javsee.one";
   const [actress, setActress] = useState(null);
   const [copied, setCopied] = useState(null);
-  const movieID = movieDetail.id.toLocaleUpperCase();
+  const movieID = movieDetail?.id?.toLocaleUpperCase();
   const moviesource = `${movieDBURL}/${movieID}`;
   const initial = useSelector(selectInitialgrid);
   const grid2 = useSelector(selectGrid2);
   const grid3 = useSelector(selectGrid3);
   const grid5 = useSelector(selectGrid5);
   const movies = useSelector(selectDetail);
-  const all_movie = useSelector(selectMovie);
-  const dataList = all;
   const [imageList, setImageList] = useState([]);
   const [activeImage, setActiveImage] = useState(imageList[0]);
   const [activeCode, setActiveCode] = useState("");
@@ -50,17 +49,16 @@ function ModieDetails({ all, suggest, movieDetail }) {
 
   useEffect(() => {
     const actorArray =
-      movieDetail.actor !== null && movieDetail.actor?.split("/");
+      movieDetail?.actor !== null && movieDetail?.actor?.split("/");
     const actorIdInArray =
-      movieDetail.actorid !== null && movieDetail.actorid?.split("/");
+      movieDetail?.actorid !== null && movieDetail?.actorid?.split("/");
 
-    const actor = actorArray.map((e, i) => [
+    const actor = actorArray?.map((e, i) => [
       { name: e, actorid: actorIdInArray[i] },
     ]);
     setActress(actor);
   }, [movieDetail]);
 
-  const excludeColumns = [];
   const indexOfLastPost = currentpage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentMovie = !showSuggest
@@ -85,8 +83,8 @@ function ModieDetails({ all, suggest, movieDetail }) {
     return [...new Set(unique)];
   };
 
-  const name = all_movie ? getUniqueName() : null;
-  const keywords = all_movie ? getUniqueKeywords() : null;
+  const name = movieDetail ? getUniqueName() : null;
+  const keywords = movieDetail ? getUniqueKeywords() : null;
 
   useEffect(() => {
     let newImageList = [];
@@ -94,7 +92,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
     setImageList(newImageList);
   }, [movies]);
 
-  const filterData = (value, item) => {
+  const filterData = async (value, item) => {
     const Value = value.toLocaleUpperCase().trim();
 
     if (item === "code") {
@@ -123,7 +121,6 @@ function ModieDetails({ all, suggest, movieDetail }) {
       setActiveStudio(value);
     }
     if (item === "name") {
-      console.log("name", value.toString());
       setActiveName(value);
       setActiveKeyword("");
       setActiveSeries("");
@@ -132,7 +129,6 @@ function ModieDetails({ all, suggest, movieDetail }) {
       setActiveStudio("");
     }
     if (item === "director") {
-      console.log("name", value.toString());
       setActiveDirector(value);
       setActiveKeyword("");
       setActiveSeries("");
@@ -141,7 +137,6 @@ function ModieDetails({ all, suggest, movieDetail }) {
       setActiveStudio("");
     }
     if (item === "keywords") {
-      console.log("keywords", value.toString());
       setActiveKeyword(value);
       setActiveName("");
       setActiveSeries("");
@@ -153,15 +148,9 @@ function ModieDetails({ all, suggest, movieDetail }) {
       setShowSuggest(false);
       setSearchResults(dataList);
     } else {
-      const filteredData = dataList.filter((item) => {
-        return Object.keys(item).some((key) =>
-          excludeColumns.includes(key)
-            ? false
-            : item[key]?.toString().toLocaleUpperCase().includes(Value)
-        );
-      });
+      const filteredData = await fetchSearchMovies(Value);
       setShowSuggest(true);
-      setSearchResults(filteredData);
+      setSearchResults(filteredData.filteredData);
     }
   };
 
@@ -173,7 +162,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
       setShowSuggest(false);
     };
     initialfilter();
-  }, [dataList, movies]);
+  }, []);
 
   useEffect(() => {
     setActiveImage(imageList[0]);
@@ -191,7 +180,10 @@ function ModieDetails({ all, suggest, movieDetail }) {
     }
   }, [movies]);
 
-  console.log(magnetLink);
+  const getdata = async () => {
+    const data = await fetchMoviesDetailsWithSuggest("juq-147");
+    console.log(data);
+  };
 
   return (
     <>
@@ -199,7 +191,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
         <div className="p-1">
           <Head>
             <title>
-              Movie || {movieDetail.title} || {movieDetail.id}
+              Movie || {movieDetail?.title} || {movieDetail?.id}
             </title>
             <link rel="icon" href="/favicon.ico" />
           </Head>
@@ -465,7 +457,7 @@ function ModieDetails({ all, suggest, movieDetail }) {
 
           <Pagination
             postsPerPage={postsPerPage}
-            totalPosts={!showSuggest ? suggest.length : searchResults?.length}
+            totalPosts={!showSuggest ? suggest?.length : searchResults?.length}
             paginate={paginate}
           />
         </div>
@@ -495,22 +487,15 @@ export async function getStaticPaths() {
     fallback: "blocking",
   };
 }
+
 export async function getStaticProps({ params }) {
   const id = params.id;
+  const movieDetail = await fetchMoviesDetailsWithSuggest(id);
 
-  const movieRes = await fetch(process.env.NEXT_PUBLIC_BASE_MOVIE_URL);
-  const data = await movieRes.json();
-  //const movieDetailsRes = await fetchMoviesDetailsWithSuggest(id);
-  //const movieDetail = movieDetailsRes.movies;
-  //const suggest = movieDetailsRes.suggest;
-
-  const initialData = data
-    .slice()
-    .sort(
-      (b, a) =>
-        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
-    );
   return {
-    props: { all: initialData, movieDetail: null, suggest: null },
+    props: {
+      movieDetail: movieDetail.movieDetail,
+      suggest: movieDetail.suggest,
+    },
   };
 }
