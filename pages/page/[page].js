@@ -13,6 +13,7 @@ import SortingHeader from "../../components/SortingHeader";
 import { pageCount } from "../../utils/helpers";
 import PaginationNew from "../../components/PaginationNew";
 import {
+  fetchAllBaseMovie,
   fetchAllMovies,
   fetchAllMoviesPaginate,
 } from "../../utils/fetchmovies";
@@ -23,8 +24,8 @@ export default function Home({
   currentPostpage,
   totalMovie,
   newsortMovie,
+  params,
 }) {
-  console.log(totalMovie);
   // const movies = JSON.parse(moviesData);
   const movies = moviesData;
 
@@ -35,7 +36,7 @@ export default function Home({
   const [sortingCriteria, setSortingCriteria] = useState("releasedateDsc");
   const [sortingMovie, setSortingMovie] = useState(
     movies
-      .slice()
+      ?.slice()
       .sort(
         (b, a) =>
           new Date(a?.releasedate).getTime() -
@@ -46,7 +47,7 @@ export default function Home({
   useEffect(() => {
     if (sortingCriteria === "releasedateDsc") {
       let newMovie = movies
-        .slice()
+        ?.slice()
         .sort(
           (b, a) =>
             new Date(a?.releasedate).getTime() -
@@ -56,7 +57,7 @@ export default function Home({
     }
     if (sortingCriteria === "releasedateAsc") {
       let newMovie = movies
-        .slice()
+        ?.slice()
         .sort(
           (b, a) =>
             new Date(b?.releasedate).getTime() -
@@ -65,37 +66,37 @@ export default function Home({
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "idAsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return a.id.localeCompare(b.id);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "idDsc") {
-      let newMovie = movies.slice().sort(function (b, a) {
+      let newMovie = movies?.slice().sort(function (b, a) {
         return a.id.localeCompare(b.id);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "titleAsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return a.actor.localeCompare(b.actor);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "titleDsc") {
-      let newMovie = movies.slice().sort(function (b, a) {
+      let newMovie = movies?.slice().sort(function (b, a) {
         return a.actor.localeCompare(b.actor);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "ratingDsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return Number(b.rating) - Number(a.rating);
       });
       setSortingMovie(newMovie);
     }
     if (sortingCriteria === "ratingAsc") {
-      let newMovie = movies.slice().sort(function (a, b) {
+      let newMovie = movies?.slice().sort(function (a, b) {
         return Number(a.rating) - Number(b.rating);
       });
       setSortingMovie(newMovie);
@@ -146,31 +147,15 @@ export default function Home({
   );
 }
 export async function getStaticPaths() {
-  const movieRes1 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie1.json"
-  );
-  const movieRes2 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie2.json"
-  );
-  const movieRes3 = await fetch(
-    "https://raw.githubusercontent.com/zonghongdevelop3/javdb.io/main/data/allmovie3.json"
-  );
-  const data1 = await movieRes1.json();
-  const data2 = await movieRes2.json();
-  const data3 = await movieRes3.json();
-
-  let allData = [];
-
-  const newAllData = allData.concat(data1, data2, data3);
-
-  let totalMovieCount = pageCount(newAllData.length);
+  const allmovieData = await fetchAllBaseMovie();
+  let totalMovieCount = pageCount(allmovieData?.length);
 
   // totalMovieCount number convert into a array
   let pageIntoArray = Array.from(Array(totalMovieCount).keys());
 
   let paths = [];
 
-  pageIntoArray.map((path) =>
+  pageIntoArray.splice(0, 100).map((path) =>
     paths.push({
       params: { page: `${path + 1}` },
     })
@@ -183,43 +168,15 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const moviesData = await fetchAllMovies();
-
-  let allData = [];
-
-  const newAllData = moviesData.movies.movies;
-  const sortMovie = newAllData
-    .slice()
-    .sort(
-      (b, a) =>
-        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
-    );
-
-  let totalMovieCount = pageCount(moviesData.totalMovieCount);
-
-  let totalMovie;
-
-  if (Number(params.page) == 1) {
-    totalMovie = sortMovie.slice(show_per_page, show_per_page);
-  }
-  if (Number(params.page) == 2) {
-    totalMovie = sortMovie.slice(show_per_page, show_per_page * params.page);
-  }
-
-  if (Number(params.page) > 2) {
-    totalMovie = sortMovie.slice(
-      show_per_page * params.page - show_per_page,
-      show_per_page * params.page
-    );
-  }
+  const moviesData = await fetchAllMoviesPaginate(params.page);
+  const newAllData = moviesData.movies;
+  const totalMovieCount = moviesData.totalMovieCount;
 
   return {
     props: {
-      moviesData: moviesData.movies.movies,
-      totalMovieCount: newAllData.length,
+      moviesData: newAllData,
       currentPostpage: params.page,
-      totalMovie: sortMovie.slice(show_per_page, show_per_page * params.page),
-      newsortMovie: sortMovie,
+      totalMovieCount,
     },
     revalidate: 60,
   };

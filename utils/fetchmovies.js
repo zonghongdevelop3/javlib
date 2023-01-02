@@ -61,13 +61,17 @@ export const fetchAllMovies = async () => {
 };
 
 export const fetchAllMoviesPaginate = async (page) => {
-  const moviesFilter = {
-    page: page,
-  };
-  const moviesData = await fetchAllMovies();
-  const newAllData = moviesData.movies.movies;
-  const totalMovieCount = pageCount(newAllData.length);
+  const moviesData = await fetchAllBaseMovie();
+  const newAllData = moviesData
+    ?.slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  const totalMovieCount = pageCount(moviesData.length);
+
   let totalMovie;
+
   if (Number(page) == 1) {
     totalMovie = newAllData.slice(show_per_page, show_per_page);
   }
@@ -81,7 +85,7 @@ export const fetchAllMoviesPaginate = async (page) => {
     );
   }
 
-  return { movies: newAllData, totalMovieCount };
+  return { movies: totalMovie, totalMovieCount: totalMovieCount };
 };
 
 export const fetchSearchMovies = async (filter) => {
