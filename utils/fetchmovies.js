@@ -192,20 +192,64 @@ export const fetchMoviesDetailsWithSuggest = async (id) => {
 
 //
 export const fetchMoviesDetailsWithAllSuggest = async (id) => {
-  const moviesFilter = {
-    id: id,
+  const excludeColumns = [];
+  const Value = id.toLocaleUpperCase().trim();
+  const moviesData = await fetchAllBaseMovie();
+  const sortData = moviesData
+    ?.slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+
+  const filteredData = sortData?.filter((item) => {
+    return Object?.keys(item)?.some((key) =>
+      excludeColumns.includes(key)
+        ? false
+        : item["id"]?.toString().toLocaleUpperCase().includes(Value)
+    );
+  });
+
+  console.log(filteredData);
+
+  const suggestInput = filteredData[0]?.actor.toLocaleUpperCase().trim();
+
+  const suggestMovie = sortData?.filter((item) => {
+    return Object?.keys(item)?.some((key) =>
+      excludeColumns.includes(key)
+        ? false
+        : item[key]?.toString().toLocaleUpperCase().includes(suggestInput)
+    );
+  });
+
+  console.log(suggestMovie);
+
+  return {
+    movieDetail: filteredData[0],
+    suggest: suggestMovie,
   };
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/getallmoviesdetailwithsuggest`,
-    { body: JSON.stringify(moviesFilter), method: "POST" }
-  );
-  const data = await res.json();
+};
 
-  const movies = data.movies;
+export const fetchAllSuggestMovie = async (input) => {
+  const allmovieData = await fetchAllBaseMovie();
+  const excludeColumns = [];
+  const id = input;
+  const Value = id.toLocaleUpperCase().trim();
+  const sortData = allmovieData
+    .slice()
+    .sort(
+      (b, a) =>
+        new Date(a?.releasedate).getTime() - new Date(b?.releasedate).getTime()
+    );
+  const filteredData = sortData?.filter((item) => {
+    return Object?.keys(item)?.some((key) =>
+      excludeColumns.includes(key)
+        ? false
+        : item[key]?.toString().toLocaleUpperCase().includes(Value)
+    );
+  });
 
-  const suggest = data.suggest;
-
-  return { movies, suggest };
+  return { suggestMovie: filteredData };
 };
 
 export const fetchMoviesDetailsMagnetlinks = async (id) => {

@@ -34,6 +34,7 @@ module.exports = {
       "www.seedmm.fun",
       "c0.jdbstatic.com",
       "javsee.one",
+      "www.prestige-av.com",
     ],
   },
 };
